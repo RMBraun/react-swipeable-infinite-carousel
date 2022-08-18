@@ -111,6 +111,7 @@ export const Carousel = ({
   gridGap = 10,
   slideWidth,
   showArrows = true,
+  isInfinite = false,
   children,
   ...props
 }: {
@@ -120,13 +121,22 @@ export const Carousel = ({
   gridGap?: number
   slideWidth: number
   showArrows?: boolean
+  isInfinite?: boolean
   children?: React.ReactNode
 }) => {
-  const slides = useMemo(
-    () => React.Children.toArray(children) || [],
-    [children]
-  )
-  const slideCount = useMemo(() => React.Children.count(children), [children])
+  const slides = useMemo(() => {
+    const mainChildren = React.Children.toArray(children) || []
+
+    return isInfinite
+      ? [
+          ...mainChildren.slice(-displayCount),
+          ...mainChildren,
+          ...mainChildren.slice(0, displayCount),
+        ]
+      : mainChildren
+  }, [children, displayCount, isInfinite])
+
+  const slideCount = useMemo(() => slides.length, [slides])
 
   const slidesRefs = useMemo<Array<React.RefObject<HTMLDivElement>>>(
     () => Array(slideCount).fill(React.createRef()),
@@ -135,13 +145,21 @@ export const Carousel = ({
 
   const containerRef = useRef<HTMLDivElement>(null)
 
+  const [maxDisplayCount, setMaxDisplayCount] = useState(
+    Math.max(displayCount, 1)
+  )
+
   const getTranslateOffset = useCallback(
-    (newIndex: number, scrollDelta = 0) =>
-      newIndex * -1 * (slideWidth + gridGap) - scrollDelta,
+    (newIndex: number, scrollDelta = 0) => {
+      return newIndex * -1 * (slideWidth + gridGap) - scrollDelta
+    },
+
     [slideWidth, gridGap]
   )
 
-  const [index, setIndex] = useState(startIndex)
+  const [index, setIndex] = useState(
+    isInfinite ? startIndex + maxDisplayCount : startIndex
+  )
   const [isDragging, setIsDragging] = useState(false)
   const [isScrolling, setIsScrolling] = useState(false)
   const [translateOffset, setTranslateOffset] = useState(
@@ -153,10 +171,6 @@ export const Carousel = ({
   const lastScrollInfo = useRef({
     timestamp: 0,
   })
-
-  const [maxDisplayCount, setMaxDisplayCount] = useState(
-    Math.max(displayCount, 1)
-  )
 
   const onResize = useCallback(() => {
     const containerWidth =
@@ -226,8 +240,8 @@ export const Carousel = ({
     [slideCount, maxDisplayCount, slideWidth, gridGap]
   )
 
-  const showLeftArrow = index !== 0
-  const showRightArrow = index + maxDisplayCount < slideCount
+  const showLeftArrow = isInfinite || index !== 0
+  const showRightArrow = isInfinite || index + maxDisplayCount < slideCount
 
   const onArrowClick = useCallback<
     (indexOffset: number) => React.MouseEventHandler
@@ -332,7 +346,11 @@ export const Carousel = ({
 
       lastScrollInfo.current.timestamp = e.timeStamp
 
-      if (
+      if (isInfinite) {
+        if (isScrollMomentum) {
+          return
+        }
+      } else if (
         isScrollMomentum ||
         (translateOffset >= maxScrollX && scrollDirection === -1) ||
         (translateOffset <= minScrollX && scrollDirection === 1)
@@ -365,18 +383,49 @@ export const Carousel = ({
         clearTimeout(scrollDebounceId.current)
       }
 
-      if (newScrollDelta >= maxScrollX) {
-        setTranslateOffset(maxScrollX)
-        debounceFunc()
-      } else if (newScrollDelta <= minScrollX) {
-        setTranslateOffset(minScrollX)
-        debounceFunc()
+      if (isInfinite) {
+        if (newScrollDelta >= maxScrollX) {
+          requestAnimationFrame(() => {
+            setIsScrolling(false)
+            setTranslateOffset(
+              getTranslateOffset(slideCount - 2 * maxDisplayCount)
+            )
+            setIndex(slideCount - 2 * maxDisplayCount)
+          })
+        } else if (newScrollDelta <= minScrollX) {
+          requestAnimationFrame(() => {
+            setIsScrolling(false)
+            setTranslateOffset(getTranslateOffset(maxDisplayCount))
+            setIndex(maxDisplayCount)
+          })
+        } else {
+          requestAnimationFrame(() => {
+            setTranslateOffset(newScrollDelta)
+          })
+
+          scrollDebounceId.current = setTimeout(debounceFunc, 100)
+        }
       } else {
-        setTranslateOffset(newScrollDelta)
-        scrollDebounceId.current = setTimeout(debounceFunc, 100)
+        if (newScrollDelta >= maxScrollX) {
+          setTranslateOffset(maxScrollX)
+          debounceFunc()
+        } else if (newScrollDelta <= minScrollX) {
+          setTranslateOffset(minScrollX)
+          debounceFunc()
+        } else {
+          requestAnimationFrame(() => {
+            setTranslateOffset(newScrollDelta)
+          })
+
+          scrollDebounceId.current = setTimeout(debounceFunc, 100)
+        }
       }
     },
     [
+      isInfinite,
+      getTranslateOffset,
+      maxDisplayCount,
+      slideCount,
       gridGap,
       isScrolling,
       minScrollX,
