@@ -1,106 +1,106 @@
-import React, {
-  useState,
-  useMemo,
-  useRef,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-} from "react"
-import styled from "@emotion/styled"
+import React, { useState, useMemo, useRef, useCallback, useEffect, useLayoutEffect } from 'react'
 
-const Container = styled.div<{
+const ContainerCss = ({
+  slideWidth,
+  displayCount,
+  minDisplayCount,
+  gridGap,
+}: {
   slideWidth: number
   displayCount: number
   minDisplayCount: number
   gridGap: number
-}>`
-  position: relative;
-  min-width: ${(props) =>
-    props.minDisplayCount && props.minDisplayCount > 0
-      ? `calc(${props.minDisplayCount} * ${props.slideWidth}px)`
-      : `auto`};
-  width: ${(props) =>
-    props.displayCount && props.displayCount > 0
-      ? `calc(${props.slideWidth}px * ${props.displayCount} + (${
-          props.displayCount - 1
-        } * ${props.gridGap}px))`
-      : "100%"};
-  max-width: 100%;
-  overflow: hidden;
+}): React.CSSProperties => ({
+  position: 'relative',
+  minWidth: `${minDisplayCount && minDisplayCount > 0 ? `calc(${minDisplayCount} * ${slideWidth}px)` : `auto`}`,
+  width: `${
+    displayCount && displayCount > 0
+      ? `calc(${slideWidth}px * ${displayCount} + (${displayCount - 1} * ${gridGap}px))`
+      : '100%'
+  }`,
+  maxWidth: '100%',
+  overflow: 'hidden',
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+})
 
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-`
-
-const SlidesContainer = styled.div<{
+const SlidesContainerCss = ({
+  gridGap,
+  translateOffset,
+  isScrolling,
+  isDragging,
+}: {
   gridGap: number
-}>`
-  display: flex;
-  flex-direction: row;
-  gap: ${(props) => props.gridGap}px;
-  z-index: 1;
-`
+  translateOffset: number
+  isScrolling: boolean
+  isDragging: boolean
+}): React.CSSProperties => ({
+  display: 'flex',
+  flexDirection: 'row',
+  gap: `${gridGap}px`,
+  zIndex: 1,
+  transform: `translate(${translateOffset}px)`,
+  transition: `transform ${isScrolling || isDragging ? '0ms' : '500ms'}`,
+})
 
-const Slide = styled.div``
+const ArrowIconCss: React.CSSProperties = {
+  width: '35%',
+  height: '35%',
+  border: '6px solid #1b1b1b',
+  borderRadius: '5px',
+  transition: 'border-color 500ms',
+}
 
-const ArrowIcon = styled.span`
-  width: 35%;
-  height: 35%;
-  border: 6px solid #1b1b1b;
-  border-radius: 5px;
-  transition: border-color 500ms;
-`
-
-const Arrow = styled.button<{
+type ArrowCssProps = {
+  isHover: boolean
   isHidden: boolean
   size: number
-}>`
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 0px;
-  margin: 0px;
-  border: none;
-  outline: none;
-  width: ${(props) => props.size}px;
-  height: ${(props) => props.size}px;
-  border-radius: 50%;
-  background-color: transparent;
-  opacity: ${(props) => (props.isHidden ? 0 : 0.5)};
-  transition: opacity 500ms, background-color 500ms;
-  background-image: url();
-  /* box-shadow: 1px 1px 5px 2px #898989; */
-  z-index: 2;
-  pointer-events: ${(props) => (props.isHidden ? "none" : "auto")};
+}
 
-  :hover {
-    opacity: ${(props) => (props.isHidden ? 0 : 1)};
-    background-color: #efefefa9;
-  }
-`
+const ArrowCss = ({ isHover, isHidden, size }: ArrowCssProps): React.CSSProperties => ({
+  position: 'absolute',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: '0px',
+  margin: '0px',
+  border: 'none',
+  outline: 'none',
+  width: `${size}px`,
+  height: `${size}px`,
+  borderRadius: '50%',
+  backgroundColor: `${isHover ? '#efefefa9' : 'transparent'}`,
+  opacity: `${isHidden ? '0' : isHover ? '1' : '0.5'}`,
+  transition: 'opacity 500ms, background-color 500ms',
+  zIndex: '2',
+  pointerEvents: `${isHidden ? 'none' : 'auto'}`,
+})
 
-const LeftArrow = styled(Arrow)`
-  left: 10px;
-`
+const LeftArrowCSs = (props: ArrowCssProps): React.CSSProperties => ({
+  ...ArrowCss(props),
+  left: '10px',
+})
 
-const LeftArrowIcon = styled(ArrowIcon)`
-  border-right: none;
-  border-top: none;
-  transform: translateX(2.5px) rotate(45deg);
-`
+const LeftArrowIconCss: React.CSSProperties = {
+  ...ArrowIconCss,
+  borderRight: 'none',
+  borderTop: 'none',
+  transform: 'translateX(2.5px) rotate(45deg)',
+}
 
-const RightArrow = styled(Arrow)`
-  right: 10px;
-`
+const RightArrowCss = (props: ArrowCssProps): React.CSSProperties => ({
+  ...ArrowCss(props),
+  right: '10px',
+})
 
-const RightArrowIcon = styled(ArrowIcon)`
-  border-left: none;
-  border-bottom: none;
-  transform: translateX(-2.5px) rotate(45deg);
-`
+const RightArrowIconCss: React.CSSProperties = {
+  ...ArrowIconCss,
+  borderLeft: 'none',
+  borderBottom: 'none',
+  transform: 'translateX(-2.5px) rotate(45deg)',
+}
 
 const getClientXOffset = (e: any) => e?.touches?.[0]?.clientX || e?.clientX || 0
 
@@ -112,7 +112,6 @@ export const Carousel = ({
   slideWidth,
   showArrows = true,
   children,
-  ...props
 }: {
   startIndex?: number
   minDisplayCount?: number
@@ -122,38 +121,31 @@ export const Carousel = ({
   showArrows?: boolean
   children?: React.ReactNode
 }) => {
-  const slides = useMemo(
-    () => React.Children.toArray(children) || [],
-    [children]
-  )
+  const slides = useMemo(() => React.Children.toArray(children) || [], [children])
 
   const slideCount = useMemo(() => slides.length, [slides])
 
   const slidesRefs = useMemo<Array<React.RefObject<HTMLDivElement>>>(
     () => Array(slideCount).fill(React.createRef()),
-    [slideCount]
+    [slideCount],
   )
 
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const [maxDisplayCount, setMaxDisplayCount] = useState(
-    Math.max(displayCount, 1)
-  )
+  const [maxDisplayCount, setMaxDisplayCount] = useState(Math.max(displayCount, 1))
 
   const getTranslateOffset = useCallback(
     (newIndex: number, scrollDelta = 0) => {
       return newIndex * -1 * (slideWidth + gridGap) - scrollDelta
     },
 
-    [slideWidth, gridGap]
+    [slideWidth, gridGap],
   )
 
   const [index, setIndex] = useState(startIndex)
   const [isDragging, setIsDragging] = useState(false)
   const [isScrolling, setIsScrolling] = useState(false)
-  const [translateOffset, setTranslateOffset] = useState(
-    getTranslateOffset(index, 0)
-  )
+  const [translateOffset, setTranslateOffset] = useState(getTranslateOffset(index, 0))
   const touchStartRef = useRef(0)
   const touchEndRef = useRef(0)
   const scrollDebounceId = useRef<NodeJS.Timeout>()
@@ -162,43 +154,23 @@ export const Carousel = ({
   })
 
   const onResize = useCallback(() => {
-    const containerWidth =
-      containerRef.current?.clientWidth || slideCount * slideWidth
+    const containerWidth = containerRef.current?.clientWidth || slideCount * slideWidth
 
-    const boundMaxDisplayCount = Math.max(
-      Math.min(Math.floor(containerWidth / slideWidth), displayCount),
-      1
-    )
+    const boundMaxDisplayCount = Math.max(Math.min(Math.floor(containerWidth / slideWidth), displayCount), 1)
 
     const newBoundIndex =
-      index < 0
-        ? 0
-        : index > slideCount - boundMaxDisplayCount
-        ? slideCount - boundMaxDisplayCount
-        : index
+      index < 0 ? 0 : index > slideCount - boundMaxDisplayCount ? slideCount - boundMaxDisplayCount : index
 
     const newBoundScrollDelta = getTranslateOffset(newBoundIndex, 0)
 
     setTranslateOffset(newBoundScrollDelta)
     setMaxDisplayCount(boundMaxDisplayCount)
-  }, [
-    slideCount,
-    slideWidth,
-    index,
-    displayCount,
-    getTranslateOffset,
-    setTranslateOffset,
-    setMaxDisplayCount,
-  ])
+  }, [slideCount, slideWidth, index, displayCount, getTranslateOffset, setTranslateOffset, setMaxDisplayCount])
 
   const getNewScrollState = useCallback(
     (newIndex: number) => {
       const newBoundIndex =
-        newIndex < 0
-          ? 0
-          : newIndex > slideCount - maxDisplayCount
-          ? slideCount - maxDisplayCount
-          : newIndex
+        newIndex < 0 ? 0 : newIndex > slideCount - maxDisplayCount ? slideCount - maxDisplayCount : newIndex
 
       const newBoundScrollDelta = getTranslateOffset(newBoundIndex, 0)
 
@@ -207,7 +179,7 @@ export const Carousel = ({
         translateOffset: newBoundScrollDelta,
       }
     },
-    [slideCount, maxDisplayCount, getTranslateOffset]
+    [slideCount, maxDisplayCount, getTranslateOffset],
   )
 
   useLayoutEffect(() => {
@@ -216,48 +188,35 @@ export const Carousel = ({
   }, [minDisplayCount, displayCount, gridGap, slideWidth])
 
   useEffect(() => {
-    window.addEventListener("resize", onResize)
+    window.addEventListener('resize', onResize)
 
     return () => {
-      window.removeEventListener("resize", onResize)
+      window.removeEventListener('resize', onResize)
     }
   }, [onResize])
 
   const maxScrollX = 0
   const minScrollX = useMemo(
     () => -1 * (slideCount - maxDisplayCount) * (slideWidth + gridGap),
-    [slideCount, maxDisplayCount, slideWidth, gridGap]
+    [slideCount, maxDisplayCount, slideWidth, gridGap],
   )
 
   const showLeftArrow = index !== 0
   const showRightArrow = index + maxDisplayCount < slideCount
 
-  const onArrowClick = useCallback<
-    (indexOffset: number) => React.MouseEventHandler
-  >(
+  const onArrowClick = useCallback<(indexOffset: number) => React.MouseEventHandler>(
     (indexOffset) => (e) => {
       e.preventDefault()
       e.stopPropagation()
 
       const newIndex = index + indexOffset
       const newBoundIndex =
-        newIndex < 0
-          ? 0
-          : newIndex > slideCount - maxDisplayCount
-          ? slideCount - maxDisplayCount - 1
-          : newIndex
+        newIndex < 0 ? 0 : newIndex > slideCount - maxDisplayCount ? slideCount - maxDisplayCount - 1 : newIndex
 
       setIndex(newBoundIndex)
       setTranslateOffset(getTranslateOffset(newBoundIndex, 0))
     },
-    [
-      index,
-      slideCount,
-      maxDisplayCount,
-      getTranslateOffset,
-      setIndex,
-      setTranslateOffset,
-    ]
+    [index, slideCount, maxDisplayCount, getTranslateOffset, setIndex, setTranslateOffset],
   )
 
   const onTouchStart = useCallback(
@@ -272,7 +231,7 @@ export const Carousel = ({
       touchStartRef.current = xOffset
       touchEndRef.current = xOffset
     },
-    [isScrolling, setIsDragging]
+    [isScrolling, setIsDragging],
   )
 
   const onTouchMove = useCallback(
@@ -290,7 +249,7 @@ export const Carousel = ({
         setTranslateOffset(newScrollDelta)
       }
     },
-    [isScrolling, isDragging, index, setTranslateOffset, getTranslateOffset]
+    [isScrolling, isDragging, index, setTranslateOffset, getTranslateOffset],
   )
 
   const onTouchEnd = useCallback(() => {
@@ -313,15 +272,7 @@ export const Carousel = ({
     }
 
     setIsDragging(false)
-  }, [
-    isScrolling,
-    index,
-    slideWidth,
-    gridGap,
-    setIndex,
-    setTranslateOffset,
-    getNewScrollState,
-  ])
+  }, [isScrolling, index, slideWidth, gridGap, setIndex, setTranslateOffset, getNewScrollState])
 
   const onScroll = useCallback<React.WheelEventHandler<HTMLDivElement>>(
     (e) => {
@@ -331,8 +282,7 @@ export const Carousel = ({
 
       const scrollDirection = Math.sign(e.deltaX)
 
-      const isScrollMomentum =
-        e.timeStamp - lastScrollInfo.current.timestamp > 30
+      const isScrollMomentum = e.timeStamp - lastScrollInfo.current.timestamp > 30
 
       lastScrollInfo.current.timestamp = e.timeStamp
 
@@ -354,9 +304,7 @@ export const Carousel = ({
         requestAnimationFrame(() => {
           setIsScrolling(false)
 
-          const newIndex = Math.round(
-            Math.abs(newScrollDelta) / (slideWidth + gridGap)
-          )
+          const newIndex = Math.round(Math.abs(newScrollDelta) / (slideWidth + gridGap))
 
           const newScrollState = getNewScrollState(newIndex)
 
@@ -394,35 +342,38 @@ export const Carousel = ({
       setIndex,
       setTranslateOffset,
       getNewScrollState,
-    ]
+    ],
   )
 
   return (
-    <Container
+    <div
+      style={ContainerCss({
+        minDisplayCount,
+        displayCount,
+        slideWidth,
+        gridGap,
+      })}
       ref={containerRef}
-      minDisplayCount={minDisplayCount}
-      displayCount={displayCount}
-      slideWidth={slideWidth}
-      gridGap={gridGap}
-      {...props}
     >
       {showArrows && (
-        <LeftArrow
+        <button
+          style={LeftArrowCSs({
+            isHover: false,
+            size: 48,
+            isHidden: isScrolling || isDragging || !showLeftArrow,
+          })}
           onClick={showLeftArrow ? onArrowClick(-1) : undefined}
-          isHidden={isScrolling || isDragging || !showLeftArrow}
-          size={48}
         >
-          <LeftArrowIcon />
-        </LeftArrow>
+          <span style={LeftArrowIconCss} />
+        </button>
       )}
-      <SlidesContainer
-        style={{
-          transform: `translate(${translateOffset}px)`,
-          transition: `transform ${
-            isScrolling || isDragging ? "0ms" : "500ms"
-          }`,
-        }}
-        gridGap={gridGap}
+      <div
+        style={SlidesContainerCss({
+          gridGap,
+          translateOffset,
+          isScrolling,
+          isDragging,
+        })}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -434,20 +385,23 @@ export const Carousel = ({
         onWheel={onScroll}
       >
         {slides.map((slide, i) => (
-          <Slide ref={slidesRefs[i]} key={i}>
+          <div ref={slidesRefs[i]} key={i}>
             {slide}
-          </Slide>
+          </div>
         ))}
-      </SlidesContainer>
+      </div>
       {showArrows && (
-        <RightArrow
+        <button
+          style={RightArrowCss({
+            isHover: false,
+            isHidden: isScrolling || isDragging || !showRightArrow,
+            size: 48,
+          })}
           onClick={showRightArrow ? onArrowClick(1) : undefined}
-          isHidden={isScrolling || isDragging || !showRightArrow}
-          size={48}
         >
-          <RightArrowIcon />
-        </RightArrow>
+          <span style={RightArrowIconCss} />
+        </button>
       )}
-    </Container>
+    </div>
   )
 }
