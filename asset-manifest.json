@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/react-swipeable-infinite-carousel/static/css/main.5f273b27.css",
-    "main.js": "/react-swipeable-infinite-carousel/static/js/main.6de6a0b7.js",
+    "main.css": "/react-swipeable-infinite-carousel/static/css/main.03373ac6.css",
+    "main.js": "/react-swipeable-infinite-carousel/static/js/main.b0cfb0f2.js",
     "index.html": "/react-swipeable-infinite-carousel/index.html",
-    "main.5f273b27.css.map": "/react-swipeable-infinite-carousel/static/css/main.5f273b27.css.map",
-    "main.6de6a0b7.js.map": "/react-swipeable-infinite-carousel/static/js/main.6de6a0b7.js.map"
+    "main.03373ac6.css.map": "/react-swipeable-infinite-carousel/static/css/main.03373ac6.css.map",
+    "main.b0cfb0f2.js.map": "/react-swipeable-infinite-carousel/static/js/main.b0cfb0f2.js.map"
   },
   "entrypoints": [
-    "static/css/main.5f273b27.css",
-    "static/js/main.6de6a0b7.js"
+    "static/css/main.03373ac6.css",
+    "static/js/main.b0cfb0f2.js"
   ]
 }
