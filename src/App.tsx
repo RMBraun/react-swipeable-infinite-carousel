@@ -25,9 +25,10 @@ const CarouselContainerCss: React.CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
-  alignItems: 'center',
+  alignItems: 'flex-start',
   border: '5px solid gray',
   padding: '15px',
+  width: 'calc(100% - 30px)',
 }
 
 const TileCss = ({ color, width }: { color: string; width: string }): React.CSSProperties => ({
@@ -51,7 +52,7 @@ function App() {
   const [tileCount, setTileCount] = useState(25)
   const [displayCount, setDisplayCount] = useState(4)
   const [minDisplayCount, setMinDisplayCount] = useState(2)
-  const [mobileDisplayCount, setMobileDisplayCount] = useState(3)
+  const [mobileDisplayCount, setMobileDisplayCount] = useState(4)
   const [mobileMinDisplayCount, setMobileMinDisplayCount] = useState(1)
 
   const randomColors = useMemo(() => {
@@ -112,7 +113,7 @@ function App() {
 
       <br />
       <label style={TextCss} htmlFor={'displayCount'}>
-        {`Display count (min: 1, max: ${isMobile ? 3 : 5}):`}
+        {`Display count (min: 1, max: ${isMobile ? 4 : 5}):`}
       </label>
       <input
         name={'displayCount'}
@@ -120,7 +121,7 @@ function App() {
         type={'number'}
         value={isMobile ? mobileDisplayCount : displayCount}
         onChange={(e) => {
-          const newCount = Math.min(isMobile ? 3 : 5, Math.max(1, parseInt(e.target.value || '1')))
+          const newCount = Math.min(isMobile ? 4 : 5, Math.max(1, parseInt(e.target.value || '1')))
           isMobile ? setMobileDisplayCount(newCount) : setDisplayCount(newCount)
         }}
       />

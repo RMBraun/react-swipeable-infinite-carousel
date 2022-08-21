@@ -7,7 +7,6 @@ Simple swipeable, draggable, and scrollable React carousel component.
 ## Currently in progress:
 
 - Infinite carousel
-- custom styles
 - custom arrows
 - dynamic tile widths
 
@@ -31,6 +30,9 @@ import { Carousel } from '@rybr/react-swipeable-infinite-carousel'
   displayCount={4.5} //maximum number of tiles to display
   minDisplayCount={2.5} //minimum number of tiles to display
   showArrows={!isMobile} //toggles displaying the prebuilt scroll arrows
+  style={ backgroundColor: 'red' } //container inline style overrides
+  slideContainerStyle={ border: '1px solid blue' } //slides container inline style overrides
+  slideStyle={ opacity: 0.5 } //slide container inline style overrides
 >
   {randomColors.map((color, i) => (
     <div key={i} style={tileCss}>

@@ -135,6 +135,9 @@ export const Carousel = ({
   gridGap = 10,
   slideWidth,
   showArrows = true,
+  style = {},
+  slideContainerStyle = {},
+  slideStyle = {},
   children,
 }: {
   startIndex?: number
@@ -143,6 +146,9 @@ export const Carousel = ({
   gridGap?: number
   slideWidth: number
   showArrows?: boolean
+  style?: React.CSSProperties
+  slideContainerStyle?: React.CSSProperties
+  slideStyle?: React.CSSProperties
   children?: React.ReactNode
 }) => {
   const slides = useMemo(() => React.Children.toArray(children) || [], [children])
@@ -380,12 +386,15 @@ export const Carousel = ({
 
   return (
     <div
-      style={ContainerCss({
-        minDisplayCount,
-        displayCount,
-        slideWidth,
-        gridGap,
-      })}
+      style={{
+        ...ContainerCss({
+          minDisplayCount,
+          displayCount,
+          slideWidth,
+          gridGap,
+        }),
+        ...style,
+      }}
       ref={containerRef}
     >
       {showArrows && (
@@ -401,11 +410,14 @@ export const Carousel = ({
       )}
       <div
         ref={slideContainerRef}
-        style={SlidesContainerCss({
-          gridGap,
-          isScrolling,
-          isDragging,
-        })}
+        style={{
+          ...SlidesContainerCss({
+            gridGap,
+            isScrolling,
+            isDragging,
+          }),
+          ...slideContainerStyle,
+        }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -417,7 +429,7 @@ export const Carousel = ({
         onWheel={onScroll}
       >
         {slides.map((slide, i) => (
-          <div ref={slidesRefs[i]} key={i}>
+          <div style={slideStyle} ref={slidesRefs[i]} key={i}>
             {slide}
           </div>
         ))}
