@@ -1,7 +1,7 @@
 {
   "homepage": "http://rmbraun.github.io/react-swipeable-infinite-carousel",
   "name": "@rybr/react-swipeable-infinite-carousel",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "swipeable infinite responsive React carousel",
   "keywords": [
     "react",
@@ -25,8 +25,8 @@
     "bundle:esm": "tsc",
     "bundle:cjs": "tsc --module commonjs --outDir dist/cjs",
     "test": "jest --config jestconfig.json",
-    "lint": "eslint \"{**/*,*}.{js,ts,jsx,tsx}\"",
-    "prettier": "prettier --write \"{src,tests,example/src}/**/*.{js,ts,jsx,tsx}\""
+    "lint": "eslint \"{src,tests}/**/*.{js,ts,jsx,tsx}\"",
+    "prettier": "prettier --write \"{src,tests}/**/*.{js,ts,jsx,tsx}\""
   },
   "devDependencies": {
     "@testing-library/react": "^13.3.0",

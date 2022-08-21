@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useLayoutEffect, useState, useMemo } from 'react'
 import { Carousel } from './components/Carousel'
 
 const HeaderCss: React.CSSProperties = {
@@ -49,6 +49,10 @@ const tileCache: Array<string> = []
 function App() {
   const [isMobile, setIsMobile] = useState(false)
   const [tileCount, setTileCount] = useState(25)
+  const [displayCount, setDisplayCount] = useState(4)
+  const [minDisplayCount, setMinDisplayCount] = useState(2)
+  const [mobileDisplayCount, setMobileDisplayCount] = useState(3)
+  const [mobileMinDisplayCount, setMobileMinDisplayCount] = useState(1)
 
   const randomColors = useMemo(() => {
     if (tileCount <= 0) {
@@ -71,7 +75,7 @@ function App() {
     return [...cachedTiles, ...newTiles]
   }, [tileCount])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const onResize = () => {
       if (document.body.clientWidth <= 475) {
         setIsMobile(true)
@@ -95,12 +99,44 @@ function App() {
       </h2>
       <br />
       <p style={SectionTitleCss}>Swipeable, draggable, and scrollable carousel</p>
-      <p style={TextCss}>Number of tiles (min: 0, max: 500): </p>
+      <label style={TextCss} htmlFor={'tileCount'}>
+        Number of tiles (min: 0, max: 500):
+      </label>
       <input
+        name={'tileCount'}
         style={TextCss}
         type={'number'}
         value={tileCount}
         onChange={(e) => setTileCount(Math.min(500, Math.max(0, parseInt(e.target.value || '0'))))}
+      />
+
+      <br />
+      <label style={TextCss} htmlFor={'displayCount'}>
+        {`Display count (min: 1, max: ${isMobile ? 3 : 5}):`}
+      </label>
+      <input
+        name={'displayCount'}
+        style={TextCss}
+        type={'number'}
+        value={isMobile ? mobileDisplayCount : displayCount}
+        onChange={(e) => {
+          const newCount = Math.min(isMobile ? 3 : 5, Math.max(1, parseInt(e.target.value || '1')))
+          isMobile ? setMobileDisplayCount(newCount) : setDisplayCount(newCount)
+        }}
+      />
+      <br />
+      <label style={TextCss} htmlFor={'minDisplayCount'}>
+        {`Minimum display count (min: 1, max: ${isMobile ? 3 : 5}):`}
+      </label>
+      <input
+        name={'minDisplayCount'}
+        style={TextCss}
+        type={'number'}
+        value={isMobile ? mobileMinDisplayCount : minDisplayCount}
+        onChange={(e) => {
+          const newMinCount = Math.min(isMobile ? 3 : 5, Math.max(1, parseInt(e.target.value || '1')))
+          isMobile ? setMobileMinDisplayCount(newMinCount) : setMinDisplayCount(newMinCount)
+        }}
       />
       <br />
       <div style={SectionContainerCss}>
@@ -108,8 +144,8 @@ function App() {
           <Carousel
             slideWidth={isMobile ? 80 : 200}
             gridGap={15}
-            displayCount={isMobile ? 3 : 4}
-            minDisplayCount={isMobile ? 1 : 2}
+            displayCount={isMobile ? mobileDisplayCount : displayCount}
+            minDisplayCount={isMobile ? mobileMinDisplayCount : minDisplayCount}
             showArrows={!isMobile}
           >
             {randomColors.map((color, i) => (

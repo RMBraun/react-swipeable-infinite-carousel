@@ -271,6 +271,8 @@ export const Carousel = ({
 
   const onTouchMove = useCallback(
     (e: any) => {
+      e.stopPropagation()
+
       if (!isDragging || isScrolling) {
         return
       }
