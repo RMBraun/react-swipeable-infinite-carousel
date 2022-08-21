@@ -220,7 +220,7 @@ export const Carousel = ({
   useLayoutEffect(() => {
     onResize()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [minDisplayCount, displayCount, gridGap, slideWidth])
+  }, [slideCount, minDisplayCount, displayCount, gridGap, slideWidth])
 
   useEffect(() => {
     window.addEventListener('resize', onResize)

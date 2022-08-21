@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { Carousel } from './components/Carousel'
 
 const HeaderCss: React.CSSProperties = {
@@ -7,6 +7,10 @@ const HeaderCss: React.CSSProperties = {
 
 const SectionTitleCss: React.CSSProperties = {
   fontSize: '2rem',
+}
+
+const TextCss: React.CSSProperties = {
+  fontSize: '1.5rem',
 }
 
 const SectionContainerCss: React.CSSProperties = {
@@ -40,12 +44,32 @@ const TileCss = ({ color, width }: { color: string; width: string }): React.CSSP
 })
 
 const getRandomColor = (): number => Math.floor(Math.random() * 205) + 10
-const randomColors = Array(25)
-  .fill(null)
-  .map(() => `rgb(${getRandomColor()}, ${getRandomColor()}, ${getRandomColor()})`)
+const tileCache: Array<string> = []
 
 function App() {
   const [isMobile, setIsMobile] = useState(false)
+  const [tileCount, setTileCount] = useState(25)
+
+  const randomColors = useMemo(() => {
+    if (tileCount <= 0) {
+      return []
+    }
+
+    const cachedTiles = tileCache.slice(0, tileCount)
+    const newTileCount = tileCount - cachedTiles.length
+    const newTiles =
+      newTileCount <= 0
+        ? []
+        : Array(newTileCount)
+            .fill(null)
+            .map(() => `rgb(${getRandomColor()}, ${getRandomColor()}, ${getRandomColor()})`)
+
+    if (newTiles.length > 0) {
+      tileCache.push(...newTiles)
+    }
+
+    return [...cachedTiles, ...newTiles]
+  }, [tileCount])
 
   useEffect(() => {
     const onResize = () => {
@@ -71,6 +95,14 @@ function App() {
       </h2>
       <br />
       <p style={SectionTitleCss}>Swipeable, draggable, and scrollable carousel</p>
+      <p style={TextCss}>Number of tiles (min: 0, max: 500): </p>
+      <input
+        style={TextCss}
+        type={'number'}
+        value={tileCount}
+        onChange={(e) => setTileCount(Math.min(500, Math.max(0, parseInt(e.target.value || '0'))))}
+      />
+      <br />
       <div style={SectionContainerCss}>
         <div style={CarouselContainerCss}>
           <Carousel
@@ -88,7 +120,7 @@ function App() {
                   width: isMobile ? '80px' : '200px',
                 })}
               >
-                {i}
+                {i + 1}
               </div>
             ))}
           </Carousel>
