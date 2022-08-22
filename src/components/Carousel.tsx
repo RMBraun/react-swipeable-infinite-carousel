@@ -262,7 +262,7 @@ export const Carousel = ({
 
   const onTouchStart = useCallback(
     (e: any) => {
-      if (isScrolling) {
+      if (isScrolling || e.touches?.length > 1) {
         return
       }
 
@@ -295,30 +295,33 @@ export const Carousel = ({
     [isScrolling, isDragging, index, setTranslateOffset, getTranslateOffset],
   )
 
-  const onTouchEnd = useCallback(() => {
-    if (isScrolling) {
-      return
-    }
+  const onTouchEnd = useCallback(
+    (e: any) => {
+      if (isScrolling || e.touches?.length > 0) {
+        return
+      }
 
-    const delta = touchStartRef.current - touchEndRef.current
+      const delta = touchStartRef.current - touchEndRef.current
 
-    if (delta !== 0) {
-      const newIndex = Math.round(index + delta / (slideWidth + gridGap))
+      if (delta !== 0) {
+        const newIndex = Math.round(index + delta / (slideWidth + gridGap))
 
-      const newScrollState = getNewScrollState(newIndex)
+        const newScrollState = getNewScrollState(newIndex)
 
-      setIndex(newScrollState.index)
-      setTranslateOffset(newScrollState.translateOffset)
+        setIndex(newScrollState.index)
+        setTranslateOffset(newScrollState.translateOffset)
 
-      touchStartRef.current = 0
-      touchEndRef.current = 0
-    }
+        touchStartRef.current = 0
+        touchEndRef.current = 0
+      }
 
-    setIsDragging(false)
-  }, [isScrolling, index, slideWidth, gridGap, setIndex, setTranslateOffset, getNewScrollState])
+      setIsDragging(false)
+    },
+    [isScrolling, index, slideWidth, gridGap, setIndex, setTranslateOffset, getNewScrollState],
+  )
 
   const onScroll = useCallback<React.WheelEventHandler<HTMLDivElement>>(
-    (e) => {
+    (e: React.WheelEvent) => {
       if (isDragging) {
         return
       }

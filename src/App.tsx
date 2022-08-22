@@ -50,13 +50,13 @@ const tileCache: Array<string> = []
 function App() {
   const [isMobile, setIsMobile] = useState(false)
   const [tileCount, setTileCount] = useState(25)
-  const [displayCount, setDisplayCount] = useState(4)
-  const [minDisplayCount, setMinDisplayCount] = useState(2)
-  const [mobileDisplayCount, setMobileDisplayCount] = useState(4)
-  const [mobileMinDisplayCount, setMobileMinDisplayCount] = useState(1)
+  const [displayCount, setDisplayCount] = useState('4')
+  const [minDisplayCount, setMinDisplayCount] = useState('2')
+  const [mobileDisplayCount, setMobileDisplayCount] = useState('4')
+  const [mobileMinDisplayCount, setMobileMinDisplayCount] = useState('1')
 
   const randomColors = useMemo(() => {
-    if (tileCount <= 0) {
+    if (!tileCount || tileCount <= 0) {
       return []
     }
 
@@ -93,6 +93,14 @@ function App() {
     }
   }, [])
 
+  const parsedDisplayCount = useMemo(() => {
+    return Math.min(isMobile ? 4 : 5, Math.max(1, parseFloat(isMobile ? mobileDisplayCount : displayCount)))
+  }, [isMobile, mobileDisplayCount, displayCount])
+
+  const parsedMinDisplayCount = useMemo(() => {
+    return Math.min(isMobile ? 3 : 5, Math.max(1, parseFloat(isMobile ? mobileMinDisplayCount : minDisplayCount)))
+  }, [isMobile, mobileMinDisplayCount, minDisplayCount])
+
   return (
     <>
       <h2 style={HeaderCss}>
@@ -118,11 +126,12 @@ function App() {
       <input
         name={'displayCount'}
         style={TextCss}
-        type={'number'}
+        type={'text'}
         value={isMobile ? mobileDisplayCount : displayCount}
         onChange={(e) => {
-          const newCount = Math.min(isMobile ? 4 : 5, Math.max(1, parseInt(e.target.value || '1')))
-          isMobile ? setMobileDisplayCount(newCount) : setDisplayCount(newCount)
+          if (!isNaN(e.target.value as any)) {
+            isMobile ? setMobileDisplayCount(e.target.value) : setDisplayCount(e.target.value)
+          }
         }}
       />
       <br />
@@ -132,11 +141,12 @@ function App() {
       <input
         name={'minDisplayCount'}
         style={TextCss}
-        type={'number'}
+        type={'text'}
         value={isMobile ? mobileMinDisplayCount : minDisplayCount}
         onChange={(e) => {
-          const newMinCount = Math.min(isMobile ? 3 : 5, Math.max(1, parseInt(e.target.value || '1')))
-          isMobile ? setMobileMinDisplayCount(newMinCount) : setMinDisplayCount(newMinCount)
+          if (!isNaN(e.target.value as any)) {
+            isMobile ? setMobileMinDisplayCount(e.target.value) : setMinDisplayCount(e.target.value)
+          }
         }}
       />
       <br />
@@ -145,8 +155,8 @@ function App() {
           <Carousel
             slideWidth={isMobile ? 80 : 200}
             gridGap={15}
-            displayCount={isMobile ? mobileDisplayCount : displayCount}
-            minDisplayCount={isMobile ? mobileMinDisplayCount : minDisplayCount}
+            displayCount={parsedDisplayCount}
+            minDisplayCount={parsedMinDisplayCount}
             showArrows={!isMobile}
           >
             {randomColors.map((color, i) => (
