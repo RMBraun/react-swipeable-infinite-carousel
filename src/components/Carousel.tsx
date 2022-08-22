@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useCallback, useEffect, useLayoutEffect, ReactNode } from 'react'
+import React, { useState, useMemo, useRef, useCallback, useEffect, useLayoutEffect } from 'react'
 
 const ContainerCss = ({
   slideWidth,
@@ -95,12 +95,16 @@ const RightArrowIconCss: React.CSSProperties = {
   transform: 'translateX(-2.5px) rotate(45deg)',
 }
 
-const Arrow: React.FunctionComponent<{
+export type RenderArrowsProps = {
+  isLeft: boolean
+  isRight: boolean
   style: React.CSSProperties
   isHidden: boolean
   onClick?: React.EventHandler<React.MouseEvent>
-  children: ReactNode
-}> = ({ isHidden, style, onClick, children }) => {
+}
+
+const Arrow: React.FC<RenderArrowsProps> = (props) => {
+  const { isLeft, isHidden, style, onClick } = props
   const [isHover, setIsHover] = useState(false)
   const [isActive, setIsActive] = useState(false)
 
@@ -121,7 +125,7 @@ const Arrow: React.FunctionComponent<{
       onMouseDown={() => setIsActive(true)}
       onMouseUp={() => setIsActive(false)}
     >
-      <>{children}</>
+      <span style={isLeft ? LeftArrowIconCss : RightArrowIconCss} />
     </button>
   )
 }
@@ -135,6 +139,7 @@ export const Carousel = ({
   gridGap = 10,
   slideWidth,
   showArrows = true,
+  renderArrows: RenderArrows = Arrow,
   style = {},
   slideContainerStyle = {},
   slideStyle = {},
@@ -146,6 +151,7 @@ export const Carousel = ({
   gridGap?: number
   slideWidth: number
   showArrows?: boolean
+  renderArrows?: React.FC<any>
   style?: React.CSSProperties
   slideContainerStyle?: React.CSSProperties
   slideStyle?: React.CSSProperties
@@ -326,25 +332,24 @@ export const Carousel = ({
         return
       }
 
-      const scrollDirection = Math.sign(e.deltaX)
-
-      const isScrollMomentum = e.timeStamp - lastScrollInfo.current.timestamp > 30
+      const isWheel = e.deltaX === 0 && Math.abs(e.deltaY) > 0
+      const scrollDelta = isWheel ? -1 * e.deltaY : e.deltaX
+      const scrollDirection = Math.sign(scrollDelta)
 
       lastScrollInfo.current.timestamp = e.timeStamp
 
       if (
-        isScrollMomentum ||
         (translateOffset.current >= maxScrollX && scrollDirection === -1) ||
         (translateOffset.current <= minScrollX && scrollDirection === 1)
       ) {
         return
       }
 
-      if (!isScrolling) {
+      if (!isScrolling && !isWheel) {
         setIsScrolling(true)
       }
 
-      const newScrollDelta = translateOffset.current - e.deltaX
+      const newScrollDelta = translateOffset.current - scrollDirection * Math.min(slideWidth, Math.abs(scrollDelta))
 
       const debounceFunc = () => {
         setIsScrolling(false)
@@ -401,15 +406,15 @@ export const Carousel = ({
       ref={containerRef}
     >
       {showArrows && (
-        <Arrow
+        <RenderArrows
+          isLeft={true}
+          isRight={false}
           style={LeftArrowCSs({
             size: 48,
           })}
           isHidden={isScrolling || isDragging || !showLeftArrow}
           onClick={showLeftArrow ? onArrowClick(-1) : undefined}
-        >
-          <span style={LeftArrowIconCss} />
-        </Arrow>
+        />
       )}
       <div
         ref={slideContainerRef}
@@ -438,15 +443,15 @@ export const Carousel = ({
         ))}
       </div>
       {showArrows && (
-        <Arrow
+        <RenderArrows
+          isLeft={false}
+          isRight={true}
           style={RightArrowCss({
             size: 48,
           })}
           isHidden={isScrolling || isDragging || !showRightArrow}
           onClick={showRightArrow ? onArrowClick(1) : undefined}
-        >
-          <span style={RightArrowIconCss} />
-        </Arrow>
+        />
       )}
     </div>
   )
