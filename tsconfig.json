@@ -1,6 +1,5 @@
 {
   "include": [
-    "./src/components",
     "./index.ts"
   ],
   "exclude": [
@@ -9,10 +8,11 @@
     "node_modules"
   ],
   "compilerOptions": {
-    "module": "esnext",
+    "target": "es5",
+    "module": "ESNext",
     "lib": [
       "dom",
-      "esnext"
+      "es5"
     ],
     "importHelpers": true,
     "declaration": true,

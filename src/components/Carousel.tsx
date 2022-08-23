@@ -132,19 +132,7 @@ const Arrow: React.FC<RenderArrowsProps> = (props) => {
 
 const getClientXOffset = (e: any) => e?.touches?.[0]?.clientX || e?.clientX || 0
 
-export const Carousel = ({
-  startIndex = 0,
-  minDisplayCount = 0,
-  displayCount = 0,
-  gridGap = 10,
-  slideWidth,
-  showArrows = true,
-  renderArrows: RenderArrows = Arrow,
-  style = {},
-  slideContainerStyle = {},
-  slideStyle = {},
-  children,
-}: {
+export const Carousel: React.FC<{
   startIndex?: number
   minDisplayCount?: number
   displayCount?: number
@@ -156,6 +144,18 @@ export const Carousel = ({
   slideContainerStyle?: React.CSSProperties
   slideStyle?: React.CSSProperties
   children?: React.ReactNode
+}> = ({
+  startIndex = 0,
+  minDisplayCount = 0,
+  displayCount = 0,
+  gridGap = 10,
+  slideWidth,
+  showArrows = true,
+  renderArrows: RenderArrows = Arrow,
+  style = {},
+  slideContainerStyle = {},
+  slideStyle = {},
+  children,
 }) => {
   const slides = useMemo(() => React.Children.toArray(children) || [], [children])
 

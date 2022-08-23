@@ -1,10 +1,21 @@
 import React from 'react';
-export declare const Carousel: ({ startIndex, minDisplayCount, displayCount, gridGap, slideWidth, showArrows, children, }: {
-    startIndex?: number | undefined;
-    minDisplayCount?: number | undefined;
-    displayCount?: number | undefined;
-    gridGap?: number | undefined;
+export declare type RenderArrowsProps = {
+    isLeft: boolean;
+    isRight: boolean;
+    style: React.CSSProperties;
+    isHidden: boolean;
+    onClick?: React.EventHandler<React.MouseEvent>;
+};
+export declare const Carousel: React.FC<{
+    startIndex?: number;
+    minDisplayCount?: number;
+    displayCount?: number;
+    gridGap?: number;
     slideWidth: number;
-    showArrows?: boolean | undefined;
+    showArrows?: boolean;
+    renderArrows?: React.FC<any>;
+    style?: React.CSSProperties;
+    slideContainerStyle?: React.CSSProperties;
+    slideStyle?: React.CSSProperties;
     children?: React.ReactNode;
-}) => JSX.Element;
+}>;

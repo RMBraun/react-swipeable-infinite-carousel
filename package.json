@@ -1,7 +1,7 @@
 {
   "homepage": "http://rmbraun.github.io/react-swipeable-infinite-carousel",
   "name": "@rybr/react-swipeable-infinite-carousel",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "swipeable infinite responsive React carousel",
   "keywords": [
     "react",
@@ -21,7 +21,8 @@
     "deploy": "gh-pages -d build",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run prettier && npm run lint",
-    "bundle": "yarn build:esm && yarn build:cjs",
+    "publish:npm": "npm run prepublishOnly && npm publish --access public",
+    "bundle": "yarn bundle:esm && yarn bundle:cjs",
     "bundle:esm": "tsc",
     "bundle:cjs": "tsc --module commonjs --outDir dist/cjs",
     "test": "jest --config jestconfig.json",

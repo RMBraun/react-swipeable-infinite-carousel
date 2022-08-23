@@ -1,5 +1,5 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.Carousel = void 0;
 var tslib_1 = require("tslib");
 var react_1 = tslib_1.__importStar(require("react"));
@@ -15,18 +15,17 @@ var ContainerCss = function (_a) {
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'row',
-        alignItems: 'center'
+        alignItems: 'center',
     });
 };
 var SlidesContainerCss = function (_a) {
-    var gridGap = _a.gridGap, translateOffset = _a.translateOffset, isScrolling = _a.isScrolling, isDragging = _a.isDragging;
+    var gridGap = _a.gridGap, isScrolling = _a.isScrolling, isDragging = _a.isDragging;
     return ({
         display: 'flex',
         flexDirection: 'row',
         gap: "".concat(gridGap, "px"),
         zIndex: 1,
-        transform: "translate(".concat(translateOffset, "px)"),
-        transition: "transform ".concat(isScrolling || isDragging ? '0ms' : '500ms')
+        transition: "transform ".concat(isScrolling || isDragging ? '0ms' : '500ms'),
     });
 };
 var ArrowIconCss = {
@@ -34,10 +33,10 @@ var ArrowIconCss = {
     height: '35%',
     border: '6px solid #1b1b1b',
     borderRadius: '5px',
-    transition: 'border-color 500ms'
+    transition: 'border-color 500ms',
 };
 var ArrowCss = function (_a) {
-    var isHover = _a.isHover, isHidden = _a.isHidden, size = _a.size;
+    var size = _a.size;
     return ({
         position: 'absolute',
         display: 'flex',
@@ -47,42 +46,59 @@ var ArrowCss = function (_a) {
         padding: '0px',
         margin: '0px',
         border: 'none',
-        outline: 'none',
         width: "".concat(size, "px"),
         height: "".concat(size, "px"),
         borderRadius: '50%',
-        backgroundColor: "".concat(isHover ? '#efefefa9' : 'transparent'),
-        opacity: "".concat(isHidden ? '0' : isHover ? '1' : '0.5'),
+        backgroundColor: 'transparent',
         transition: 'opacity 500ms, background-color 500ms',
         zIndex: '2',
-        pointerEvents: "".concat(isHidden ? 'none' : 'auto')
+        cursor: 'pointer',
     });
 };
 var LeftArrowCSs = function (props) { return (tslib_1.__assign(tslib_1.__assign({}, ArrowCss(props)), { left: '10px' })); };
 var LeftArrowIconCss = tslib_1.__assign(tslib_1.__assign({}, ArrowIconCss), { borderRight: 'none', borderTop: 'none', transform: 'translateX(2.5px) rotate(45deg)' });
 var RightArrowCss = function (props) { return (tslib_1.__assign(tslib_1.__assign({}, ArrowCss(props)), { right: '10px' })); };
 var RightArrowIconCss = tslib_1.__assign(tslib_1.__assign({}, ArrowIconCss), { borderLeft: 'none', borderBottom: 'none', transform: 'translateX(-2.5px) rotate(45deg)' });
+var Arrow = function (props) {
+    var isLeft = props.isLeft, isHidden = props.isHidden, style = props.style, onClick = props.onClick;
+    var _a = (0, react_1.useState)(false), isHover = _a[0], setIsHover = _a[1];
+    var _b = (0, react_1.useState)(false), isActive = _b[0], setIsActive = _b[1];
+    return (react_1.default.createElement("button", { style: tslib_1.__assign(tslib_1.__assign({}, style), { opacity: isHidden ? '0' : isHover ? '1' : '0.5', pointerEvents: "".concat(isHidden ? 'none' : 'auto'), backgroundColor: isActive ? '#929292a9' : isHover ? '#efefefa9' : 'transparent' }), onClick: onClick, onMouseEnter: function () { return setIsHover(true); }, onMouseLeave: function () {
+            setIsHover(false);
+            setIsActive(false);
+        }, onMouseDown: function () { return setIsActive(true); }, onMouseUp: function () { return setIsActive(false); } },
+        react_1.default.createElement("span", { style: isLeft ? LeftArrowIconCss : RightArrowIconCss })));
+};
 var getClientXOffset = function (e) { var _a, _b; return ((_b = (_a = e === null || e === void 0 ? void 0 : e.touches) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.clientX) || (e === null || e === void 0 ? void 0 : e.clientX) || 0; };
 var Carousel = function (_a) {
-    var _b = _a.startIndex, startIndex = _b === void 0 ? 0 : _b, _c = _a.minDisplayCount, minDisplayCount = _c === void 0 ? 0 : _c, _d = _a.displayCount, displayCount = _d === void 0 ? 0 : _d, _e = _a.gridGap, gridGap = _e === void 0 ? 10 : _e, slideWidth = _a.slideWidth, _f = _a.showArrows, showArrows = _f === void 0 ? true : _f, children = _a.children;
-    var slides = (0, react_1.useMemo)(function () { return react_1["default"].Children.toArray(children) || []; }, [children]);
+    var _b = _a.startIndex, startIndex = _b === void 0 ? 0 : _b, _c = _a.minDisplayCount, minDisplayCount = _c === void 0 ? 0 : _c, _d = _a.displayCount, displayCount = _d === void 0 ? 0 : _d, _e = _a.gridGap, gridGap = _e === void 0 ? 10 : _e, slideWidth = _a.slideWidth, _f = _a.showArrows, showArrows = _f === void 0 ? true : _f, _g = _a.renderArrows, RenderArrows = _g === void 0 ? Arrow : _g, _h = _a.style, style = _h === void 0 ? {} : _h, _j = _a.slideContainerStyle, slideContainerStyle = _j === void 0 ? {} : _j, _k = _a.slideStyle, slideStyle = _k === void 0 ? {} : _k, children = _a.children;
+    var slides = (0, react_1.useMemo)(function () { return react_1.default.Children.toArray(children) || []; }, [children]);
     var slideCount = (0, react_1.useMemo)(function () { return slides.length; }, [slides]);
-    var slidesRefs = (0, react_1.useMemo)(function () { return Array(slideCount).fill(react_1["default"].createRef()); }, [slideCount]);
+    var slidesRefs = (0, react_1.useMemo)(function () { return Array(slideCount).fill(react_1.default.createRef()); }, [slideCount]);
     var containerRef = (0, react_1.useRef)(null);
-    var _g = (0, react_1.useState)(Math.max(displayCount, 1)), maxDisplayCount = _g[0], setMaxDisplayCount = _g[1];
+    var slideContainerRef = (0, react_1.useRef)(null);
+    var _l = (0, react_1.useState)(Math.max(displayCount, 1)), maxDisplayCount = _l[0], setMaxDisplayCount = _l[1];
     var getTranslateOffset = (0, react_1.useCallback)(function (newIndex, scrollDelta) {
         if (scrollDelta === void 0) { scrollDelta = 0; }
         return newIndex * -1 * (slideWidth + gridGap) - scrollDelta;
     }, [slideWidth, gridGap]);
-    var _h = (0, react_1.useState)(startIndex), index = _h[0], setIndex = _h[1];
-    var _j = (0, react_1.useState)(false), isDragging = _j[0], setIsDragging = _j[1];
-    var _k = (0, react_1.useState)(false), isScrolling = _k[0], setIsScrolling = _k[1];
-    var _l = (0, react_1.useState)(getTranslateOffset(index, 0)), translateOffset = _l[0], setTranslateOffset = _l[1];
+    var _m = (0, react_1.useState)(startIndex), index = _m[0], setIndex = _m[1];
+    var _o = (0, react_1.useState)(false), isDragging = _o[0], setIsDragging = _o[1];
+    var _p = (0, react_1.useState)(false), isScrolling = _p[0], setIsScrolling = _p[1];
+    var translateOffset = (0, react_1.useRef)(getTranslateOffset(index, 0));
+    var setTranslateOffset = (0, react_1.useCallback)(function (offset) {
+        translateOffset.current = offset;
+        requestAnimationFrame(function () {
+            if (slideContainerRef.current) {
+                slideContainerRef.current.style.transform = "translate(".concat(offset, "px)");
+            }
+        });
+    }, []);
     var touchStartRef = (0, react_1.useRef)(0);
     var touchEndRef = (0, react_1.useRef)(0);
     var scrollDebounceId = (0, react_1.useRef)();
     var lastScrollInfo = (0, react_1.useRef)({
-        timestamp: 0
+        timestamp: 0,
     });
     var onResize = (0, react_1.useCallback)(function () {
         var _a;
@@ -98,13 +114,13 @@ var Carousel = function (_a) {
         var newBoundScrollDelta = getTranslateOffset(newBoundIndex, 0);
         return {
             index: newBoundIndex,
-            translateOffset: newBoundScrollDelta
+            translateOffset: newBoundScrollDelta,
         };
     }, [slideCount, maxDisplayCount, getTranslateOffset]);
     (0, react_1.useLayoutEffect)(function () {
         onResize();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [minDisplayCount, displayCount, gridGap, slideWidth]);
+    }, [slideCount, minDisplayCount, displayCount, gridGap, slideWidth]);
     (0, react_1.useEffect)(function () {
         window.addEventListener('resize', onResize);
         return function () {
@@ -124,7 +140,8 @@ var Carousel = function (_a) {
         setTranslateOffset(getTranslateOffset(newBoundIndex, 0));
     }; }, [index, slideCount, maxDisplayCount, getTranslateOffset, setIndex, setTranslateOffset]);
     var onTouchStart = (0, react_1.useCallback)(function (e) {
-        if (isScrolling) {
+        var _a;
+        if (isScrolling || ((_a = e.touches) === null || _a === void 0 ? void 0 : _a.length) > 1) {
             return;
         }
         setIsDragging(true);
@@ -133,6 +150,7 @@ var Carousel = function (_a) {
         touchEndRef.current = xOffset;
     }, [isScrolling, setIsDragging]);
     var onTouchMove = (0, react_1.useCallback)(function (e) {
+        e.stopPropagation();
         if (!isDragging || isScrolling) {
             return;
         }
@@ -143,8 +161,9 @@ var Carousel = function (_a) {
             setTranslateOffset(newScrollDelta);
         }
     }, [isScrolling, isDragging, index, setTranslateOffset, getTranslateOffset]);
-    var onTouchEnd = (0, react_1.useCallback)(function () {
-        if (isScrolling) {
+    var onTouchEnd = (0, react_1.useCallback)(function (e) {
+        var _a;
+        if (isScrolling || ((_a = e.touches) === null || _a === void 0 ? void 0 : _a.length) > 0) {
             return;
         }
         var delta = touchStartRef.current - touchEndRef.current;
@@ -162,26 +181,24 @@ var Carousel = function (_a) {
         if (isDragging) {
             return;
         }
-        var scrollDirection = Math.sign(e.deltaX);
-        var isScrollMomentum = e.timeStamp - lastScrollInfo.current.timestamp > 30;
+        var isWheel = e.deltaX === 0 && Math.abs(e.deltaY) > 0;
+        var scrollDelta = isWheel ? -1 * e.deltaY : e.deltaX;
+        var scrollDirection = Math.sign(scrollDelta);
         lastScrollInfo.current.timestamp = e.timeStamp;
-        if (isScrollMomentum ||
-            (translateOffset >= maxScrollX && scrollDirection === -1) ||
-            (translateOffset <= minScrollX && scrollDirection === 1)) {
+        if ((translateOffset.current >= maxScrollX && scrollDirection === -1) ||
+            (translateOffset.current <= minScrollX && scrollDirection === 1)) {
             return;
         }
-        if (!isScrolling) {
+        if (!isScrolling && !isWheel) {
             setIsScrolling(true);
         }
-        var newScrollDelta = translateOffset - e.deltaX;
+        var newScrollDelta = translateOffset.current - scrollDirection * Math.min(slideWidth, Math.abs(scrollDelta));
         var debounceFunc = function () {
-            requestAnimationFrame(function () {
-                setIsScrolling(false);
-                var newIndex = Math.round(Math.abs(newScrollDelta) / (slideWidth + gridGap));
-                var newScrollState = getNewScrollState(newIndex);
-                setIndex(newScrollState.index);
-                setTranslateOffset(newScrollState.translateOffset);
-            });
+            setIsScrolling(false);
+            var newIndex = Math.round(Math.abs(newScrollDelta) / (slideWidth + gridGap));
+            var newScrollState = getNewScrollState(newIndex);
+            setIndex(newScrollState.index);
+            setTranslateOffset(newScrollState.translateOffset);
         };
         if (scrollDebounceId.current) {
             clearTimeout(scrollDebounceId.current);
@@ -195,9 +212,7 @@ var Carousel = function (_a) {
             debounceFunc();
         }
         else {
-            requestAnimationFrame(function () {
-                setTranslateOffset(newScrollDelta);
-            });
+            setTranslateOffset(newScrollDelta);
             scrollDebounceId.current = setTimeout(debounceFunc, 100);
         }
     }, [
@@ -212,30 +227,23 @@ var Carousel = function (_a) {
         setTranslateOffset,
         getNewScrollState,
     ]);
-    return (react_1["default"].createElement("div", { style: ContainerCss({
+    return (react_1.default.createElement("div", { style: tslib_1.__assign(tslib_1.__assign({}, ContainerCss({
             minDisplayCount: minDisplayCount,
             displayCount: displayCount,
             slideWidth: slideWidth,
-            gridGap: gridGap
-        }), ref: containerRef },
-        showArrows && (react_1["default"].createElement("button", { style: LeftArrowCSs({
-                isHover: false,
+            gridGap: gridGap,
+        })), style), ref: containerRef },
+        showArrows && (react_1.default.createElement(RenderArrows, { isLeft: true, isRight: false, style: LeftArrowCSs({
                 size: 48,
-                isHidden: isScrolling || isDragging || !showLeftArrow
-            }), onClick: showLeftArrow ? onArrowClick(-1) : undefined },
-            react_1["default"].createElement("span", { style: LeftArrowIconCss }))),
-        react_1["default"].createElement("div", { style: SlidesContainerCss({
+            }), isHidden: isScrolling || isDragging || !showLeftArrow, onClick: showLeftArrow ? onArrowClick(-1) : undefined })),
+        react_1.default.createElement("div", { ref: slideContainerRef, style: tslib_1.__assign(tslib_1.__assign({}, SlidesContainerCss({
                 gridGap: gridGap,
-                translateOffset: translateOffset,
                 isScrolling: isScrolling,
-                isDragging: isDragging
-            }), onTouchStart: onTouchStart, onTouchMove: onTouchMove, onTouchEnd: onTouchEnd, onTouchCancel: onTouchEnd, onMouseDown: onTouchStart, onMouseMove: onTouchMove, onMouseUp: onTouchEnd, onMouseLeave: onTouchEnd, onWheel: onScroll }, slides.map(function (slide, i) { return (react_1["default"].createElement("div", { ref: slidesRefs[i], key: i }, slide)); })),
-        showArrows && (react_1["default"].createElement("button", { style: RightArrowCss({
-                isHover: false,
-                isHidden: isScrolling || isDragging || !showRightArrow,
-                size: 48
-            }), onClick: showRightArrow ? onArrowClick(1) : undefined },
-            react_1["default"].createElement("span", { style: RightArrowIconCss })))));
+                isDragging: isDragging,
+            })), slideContainerStyle), onTouchStart: onTouchStart, onTouchMove: onTouchMove, onTouchEnd: onTouchEnd, onTouchCancel: onTouchEnd, onMouseDown: onTouchStart, onMouseMove: onTouchMove, onMouseUp: onTouchEnd, onMouseLeave: onTouchEnd, onWheel: onScroll }, slides.map(function (slide, i) { return (react_1.default.createElement("div", { style: slideStyle, ref: slidesRefs[i], key: i }, slide)); })),
+        showArrows && (react_1.default.createElement(RenderArrows, { isLeft: false, isRight: true, style: RightArrowCss({
+                size: 48,
+            }), isHidden: isScrolling || isDragging || !showRightArrow, onClick: showRightArrow ? onArrowClick(1) : undefined }))));
 };
 exports.Carousel = Carousel;
 //# sourceMappingURL=Carousel.js.map
