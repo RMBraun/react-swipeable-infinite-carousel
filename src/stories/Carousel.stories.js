@@ -72,10 +72,10 @@ const Template = ({ startIndex, tileCount, displayCount, minDisplayCount, showAr
           minDisplayCount={minDisplayCount}
           showArrows={showArrows}
           style={{
-            height: '100%',
+            height: '300px',
           }}
           slideContainerStyle={{
-            height: '100%',
+            height: '300px',
             width: '100%',
           }}
         >
@@ -128,7 +128,7 @@ export const Carousel = Template.bind({})
 Carousel.args = {
   tileCount: 25,
   startIndex: 0,
-  slideWidth: 200,
+  slideWidth: 145,
   gridGap: 15,
   displayCount: 4,
   minDisplayCount: 2,

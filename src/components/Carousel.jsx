@@ -1,111 +1,33 @@
 import React, { useState, useMemo, useRef, useCallback, useEffect, useLayoutEffect } from 'react'
-// import PropTypes from 'prop-types'
+import styles from './Carousel.module.css'
 
 const calcContainerWidth = (width, count, gap) => `calc(${width}px * ${count} + (${count - 1} * ${gap}px))`
 
 const ContainerCss = ({ slideWidth, displayCount, minDisplayCount, gridGap }) => ({
-  position: 'relative',
   minWidth: `${
     minDisplayCount && minDisplayCount > 0 ? calcContainerWidth(slideWidth, minDisplayCount, gridGap) : 'auto'
   }`,
   width: `${displayCount && displayCount > 0 ? calcContainerWidth(slideWidth, displayCount, gridGap) : '100%'}`,
-  maxWidth: '100%',
-  overflow: 'hidden',
-  display: 'flex',
-  flexDirection: 'row',
-  alignItems: 'center',
 })
 
 const SlidesContainerCss = ({ gridGap, isScrolling, isDragging }) => ({
-  display: 'flex',
-  flexDirection: 'row',
   gap: `${gridGap}px`,
-  zIndex: 1,
   transition: `transform ${isScrolling || isDragging ? '0ms' : '500ms'}`,
 })
 
-const ArrowIconCss = {
-  width: '35%',
-  height: '35%',
-  border: '6px solid #1b1b1b',
-  borderRadius: '5px',
-  transition: 'border-color 500ms',
-}
-
-const ArrowCss = ({ size }) => ({
-  position: 'absolute',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  alignItems: 'center',
-  padding: '0px',
-  margin: '0px',
-  border: 'none',
-  width: `${size}px`,
-  height: `${size}px`,
-  borderRadius: '50%',
-  backgroundColor: 'transparent',
-  transition: 'opacity 500ms, background-color 500ms',
-  zIndex: '2',
-  cursor: 'pointer',
-})
-
-const LeftArrowCSs = (props) => ({
-  ...ArrowCss(props),
-  left: '10px',
-})
-
-const LeftArrowIconCss = {
-  ...ArrowIconCss,
-  borderRight: 'none',
-  borderTop: 'none',
-  transform: 'translateX(2.5px) rotate(45deg)',
-}
-
-const RightArrowCss = (props) => ({
-  ...ArrowCss(props),
-  right: '10px',
-})
-
-const RightArrowIconCss = {
-  ...ArrowIconCss,
-  borderLeft: 'none',
-  borderBottom: 'none',
-  transform: 'translateX(-2.5px) rotate(45deg)',
-}
-
 const Arrow = ({ isLeft, isHidden, style, onClick }) => {
-  const [isHover, setIsHover] = useState(false)
-  const [isActive, setIsActive] = useState(false)
-
   return (
     <button
-      style={{
-        ...style,
-        opacity: isHidden ? '0' : isHover ? '1' : '0.5',
-        pointerEvents: `${isHidden ? 'none' : 'auto'}`,
-        backgroundColor: isActive ? '#929292a9' : isHover ? '#efefefa9' : 'transparent',
-      }}
+      className={`${styles.arrow} ${isLeft ? styles.leftArrow : styles.rightArrow} ${
+        isHidden ? styles.isArrowHidden : ''
+      }`}
+      style={style}
       onClick={onClick}
-      onMouseEnter={() => setIsHover(true)}
-      onMouseLeave={() => {
-        setIsHover(false)
-        setIsActive(false)
-      }}
-      onMouseDown={() => setIsActive(true)}
-      onMouseUp={() => setIsActive(false)}
     >
-      <span style={isLeft ? LeftArrowIconCss : RightArrowIconCss} />
+      <span className={`${styles.arrowIcon} ${isLeft ? styles.leftArrowIcon : styles.rightArrowIcon}`} />
     </button>
   )
 }
-
-// Arrow.propTypes = {
-//   isLeft: PropTypes.bool,
-//   isHidden: PropTypes.bool,
-//   style: PropTypes.object,
-//   onClick: PropTypes.func,
-// }
 
 const getClientXOffset = (e) => e?.touches?.[0]?.clientX || e?.clientX || 0
 
@@ -114,7 +36,7 @@ export const Carousel = ({
   minDisplayCount = 0,
   displayCount = 0,
   gridGap = 10,
-  slideWidth,
+  slideWidth = 0,
   showArrows = true,
   renderArrows: RenderArrows = Arrow,
   style = {},
@@ -355,6 +277,7 @@ export const Carousel = ({
 
   return (
     <div
+      className={styles.container}
       style={{
         ...ContainerCss({
           minDisplayCount,
@@ -370,15 +293,13 @@ export const Carousel = ({
         <RenderArrows
           isLeft={true}
           isRight={false}
-          style={LeftArrowCSs({
-            size: 48,
-          })}
           isHidden={isScrolling || isDragging || !showLeftArrow}
           onClick={showLeftArrow ? onArrowClick(-1) : undefined}
         />
       )}
       <div
         ref={slideContainerRef}
+        className={styles.slideContainer}
         style={{
           ...SlidesContainerCss({
             gridGap,
@@ -407,9 +328,6 @@ export const Carousel = ({
         <RenderArrows
           isLeft={false}
           isRight={true}
-          style={RightArrowCss({
-            size: 48,
-          })}
           isHidden={isScrolling || isDragging || !showRightArrow}
           onClick={showRightArrow ? onArrowClick(1) : undefined}
         />
@@ -417,17 +335,3 @@ export const Carousel = ({
     </div>
   )
 }
-
-// Carousel.propTypes = {
-//   startIndex: PropTypes.number,
-//   minDisplayCount: PropTypes.number,
-//   displayCount: PropTypes.number,
-//   gridGap: PropTypes.number,
-//   slideWidth: PropTypes.number,
-//   showArrows: PropTypes.bool,
-//   renderArrows: PropTypes.node,
-//   style: PropTypes.object,
-//   slideContainerStyle: PropTypes.object,
-//   slideStyle: PropTypes.object,
-//   children: PropTypes.node,
-// }

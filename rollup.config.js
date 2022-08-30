@@ -21,6 +21,9 @@ export default [
       },
     ],
     plugins: [
+      resolve({
+        extensions: ['.js', '.jsx'],
+      }),
       postcss({
         plugins: [],
         minimize: true,
@@ -30,9 +33,6 @@ export default [
         presets: [['@babel/preset-react']],
       }),
       external(),
-      resolve({
-        extensions: ['.js', '.jsx'],
-      }),
       terser(),
     ],
   },

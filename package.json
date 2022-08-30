@@ -5,7 +5,7 @@
     "url": "git+https://github.com/RMBraun/react-swipeable-infinite-carousel.git"
   },
   "homepage": "http://rmbraun.github.io/react-swipeable-infinite-carousel",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "swipeable infinite responsive React carousel",
   "keywords": [
     "react",
@@ -45,6 +45,7 @@
     "eslint-plugin-react": "^7.31.1",
     "eslint-plugin-react-hooks": "^4.6.0",
     "gh-pages": "^4.0.0",
+    "postcss": "^8.4.16",
     "prettier": "^2.7.1",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
@@ -53,7 +54,8 @@
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-postcss": "^4.0.2",
-    "rollup-plugin-terser": "^7.0.2"
+    "rollup-plugin-terser": "^7.0.2",
+    "storybook-css-modules": "^1.0.8"
   },
   "peerDependencies": {
     "react": "^18.2.0",
