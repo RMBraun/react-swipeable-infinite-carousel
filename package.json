@@ -21,9 +21,8 @@
     "dev": "start-storybook -p 6006",
     "lint": "eslint \"src/components/**/*.{js,jsx}\"",
     "prettier": "prettier --write \"src/components/**/*.{js,jsx}\"",
-    "predeploy": "npm run build-storybook",
     "build-storybook": "build-storybook",
-    "gh-deploy": "gh-pages -d storybook-static",
+    "gh-deploy": "build-storybook && gh-pages -d storybook-static",
     "bundle": "rollup -c"
   },
   "devDependencies": {
