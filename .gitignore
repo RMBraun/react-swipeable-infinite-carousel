@@ -89,3 +89,6 @@ typings/
 
 # react-scripts
 build
+
+# storybook
+storybook-static
