@@ -78,18 +78,26 @@ export const Carousel = ({
   const containerRef = useRef(null)
   const slideContainerRef = useRef(null)
   const getTranslateOffset = useCallback(
-    (newIndex) => {
-      const start = slideAnchors?.[newIndex]?.start
+    (newIndex, newSlideAnchors = slideAnchors) => {
+      const start = newSlideAnchors?.[newIndex]?.start
       return start != null ? -1 * start : 0
     },
 
     [slideAnchors],
   )
-  const [index, setIndex] = useState(startIndex)
+  const indexRef = useRef(startIndex)
+  const [index, setIndexState] = useState(startIndex)
+  const setIndex = useCallback(
+    (newIndex) => {
+      setIndexState(newIndex)
+      indexRef.current = newIndex
+    },
+    [setIndexState],
+  )
   const [maxIndex, setMaxIndex] = useState(slideCount)
   const [isDragging, setIsDragging] = useState(false)
   const [isScrolling, setIsScrolling] = useState(false)
-  const translateOffset = useRef(getTranslateOffset(index, 0))
+  const translateOffset = useRef(getTranslateOffset(index))
   const touchStartRef = useRef(0)
   const touchEndRef = useRef(0)
   const scrollDebounceId = useRef()
@@ -127,8 +135,8 @@ export const Carousel = ({
       newSlideAnchors.findIndex(({ start }) => start + containerWidth >= lastEnd),
       newSlideAnchors.length - 1,
     )
-    const newIndex = getBoundIndex(index, newMaxIndex)
-    const newTranslateOffset = getTranslateOffset(newIndex)
+    const newIndex = getBoundIndex(indexRef.current, newMaxIndex)
+    const newTranslateOffset = getTranslateOffset(newIndex, newSlideAnchors)
 
     setIndex(newIndex)
     setSlideAnchors(newSlideAnchors)
@@ -150,16 +158,14 @@ export const Carousel = ({
     [slideCount, getTranslateOffset, getBoundIndex],
   )
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (resizeObserverRef.current) {
       resizeObserverRef.current.disconnect()
     }
 
     resizeObserverRef.current = new ResizeObserver(onResize)
     slidesRefs.forEach(({ current }) => resizeObserverRef.current.observe(current))
-  }, [slideCount])
 
-  useLayoutEffect(() => {
     onResize()
   }, [slideCount, minDisplayCount, displayCount, gridGap])
 
