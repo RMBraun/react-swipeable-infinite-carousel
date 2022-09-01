@@ -103,10 +103,10 @@ export const Carousel = ({
   const scrollDebounceId = useRef()
   const maxScrollX = 0
   const minScrollX = useMemo(() => {
-    const start = slideAnchors?.[slideCount - 1]?.start
+    const start = slideAnchors?.[maxIndex]?.start
 
     return start != null ? -1 * start : 0
-  }, [slideAnchors, slideCount])
+  }, [slideAnchors, slideCount, maxIndex])
   const showLeftArrow = index !== 0
   const showRightArrow =
     translateOffset.current != null && containerRef.current != null && slideAnchors?.[slideCount - 1] != null
@@ -275,17 +275,21 @@ export const Carousel = ({
         setIsScrolling(true)
       }
 
-      const newScrollDelta = translateOffset.current - scrollDirection * Math.min(1, Math.abs(scrollDelta))
+      const newScrollDelta = translateOffset.current - scrollDirection * Math.min(75, Math.abs(scrollDelta))
 
       const debounceFunc = () => {
         setIsScrolling(false)
 
-        const newIndex = Math.round(Math.abs(newScrollDelta) / (1 + gridGap))
+        const currentOffset = -1 * newScrollDelta
 
-        const newScrollState = getNewScrollState(newIndex)
+        const newIndex = slideAnchors.reduce((acc, { start, width }, i) => {
+          return currentOffset >= start ? (currentOffset >= start + width / 2 ? i + 1 : i) : acc
+        }, 0)
 
-        setIndex(newScrollState.index)
-        setTranslateOffset(newScrollState.translateOffset)
+        const newBoundIndex = getBoundIndex(newIndex)
+
+        setIndex(newBoundIndex)
+        setTranslateOffset(getTranslateOffset(newBoundIndex))
       }
 
       if (scrollDebounceId.current) {
@@ -305,6 +309,7 @@ export const Carousel = ({
       }
     },
     [
+      slideAnchors,
       gridGap,
       isScrolling,
       minScrollX,
@@ -363,7 +368,7 @@ export const Carousel = ({
         onMouseMove={onTouchMove}
         onMouseUp={onTouchEnd}
         onMouseLeave={onTouchEnd}
-        // onWheel={onScroll}
+        onWheel={onScroll}
       >
         {slides.map((slide, i) => (
           <div style={slideStyle} ref={slidesRefs[i]} key={i}>

@@ -3,6 +3,11 @@
         "browser": true,
         "es2021": true
     },
+    "settings": {
+        "react": {
+            "version": "detect"
+        }
+    },
     "extends": [
         "prettier",
         "plugin:prettier/recommended",
@@ -20,7 +25,7 @@
         "react-hooks"
     ],
     "rules": {
-        "react/react-in-jsx-scope": "off",
-        "react/prop-types": 0
+        "react/react-in-jsx-scope": 1,
+        "react/prop-types": 1
     }
 }
