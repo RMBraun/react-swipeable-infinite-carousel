@@ -66,7 +66,6 @@ const Template = ({ startIndex, tileCount, displayCount, minDisplayCount, showAr
       <div style={CarouselContainerCss}>
         <CarouselEle
           startIndex={startIndex}
-          slideWidth={slideWidth}
           gridGap={gridGap}
           displayCount={displayCount}
           minDisplayCount={minDisplayCount}
@@ -84,7 +83,7 @@ const Template = ({ startIndex, tileCount, displayCount, minDisplayCount, showAr
               key={i}
               style={TileCss({
                 color,
-                width: `${slideWidth}px`,
+                width: `${i === 3 ? 3 * slideWidth : i === 5 ? 2 * slideWidth : slideWidth}px`,
               })}
             >
               {i + 1}
@@ -128,9 +127,9 @@ export const Carousel = Template.bind({})
 Carousel.args = {
   tileCount: 25,
   startIndex: 0,
-  slideWidth: 145,
+  slideWidth: 150,
   gridGap: 15,
   displayCount: 4,
-  minDisplayCount: 2,
+  minDisplayCount: 0,
   showArrows: true,
 }
