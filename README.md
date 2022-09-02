@@ -13,7 +13,7 @@ Simple swipeable, draggable, and scrollable React carousel component.
 ```
 npm install @rybr/react-swipeable-infinite-carousel
 
-yarn add /react-swipeable-infinite-carousel
+yarn add @rybr/react-swipeable-infinite-carousel
 ```
 
 ## How to use
@@ -73,4 +73,4 @@ const CustomArrow = ({ isLeft, isHidden, scrollBy }) => {
 | **showArrows** 	| boolean 	| true 	| Boolean to toggle displaying the prebuilt scroll arrows 	|
 | **scrollSpeed** 	| number 	| 75 	| The maximum scroll speed allowed in pixels 	|
 | **renderArrows** 	| ({isLeft,isRight,isHidden,scrollBy}) => React.Element 	|  	| Function that returns a React.Element to be used as the scroll arrows.<br>`isLeft` and `isRight` are booleans that define if it is the right or left scroll arrow.<br>`isHidden` defines if the arrows should be hidden (is true while scrollings/dragging and when you cannot scroll any more).<br>`scrollBy` should be called when the button is pressed and will scroll by the amount specified. 	|
-| **children** 	| React.Node \| Array<React.Node> 	|  	| The slides you wish to display in the carousel 	|
+| **children** 	| React.ReactNode  	|  	| The slides you wish to display in the carousel 	|
