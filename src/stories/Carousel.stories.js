@@ -37,9 +37,19 @@ const TileCss = ({ color, width }) => ({
 })
 
 const getRandomColor = () => Math.floor(Math.random() * 205) + 10
+const getRandomWidth = () => Math.max(Math.min((Math.random() * 7 + 1) * 40 + 10, 300), 100)
 const tileCache = []
 
-const Template = ({ startIndex, tileCount, displayCount, minDisplayCount, showArrows, slideWidth, gridGap }) => {
+const Template = ({
+  randomTileSizes,
+  startIndex,
+  tileCount,
+  displayCount,
+  minDisplayCount,
+  showArrows,
+  slideWidth,
+  gridGap,
+}) => {
   const randomColors = useMemo(() => {
     if (!tileCount || tileCount <= 0) {
       return []
@@ -52,7 +62,10 @@ const Template = ({ startIndex, tileCount, displayCount, minDisplayCount, showAr
         ? []
         : Array(newTileCount)
             .fill()
-            .map(() => `rgb(${getRandomColor()}, ${getRandomColor()}, ${getRandomColor()})`)
+            .map(() => ({
+              color: `rgb(${getRandomColor()}, ${getRandomColor()}, ${getRandomColor()})`,
+              width: getRandomWidth(),
+            }))
 
     if (newTiles.length > 0) {
       tileCache.push(...newTiles)
@@ -78,12 +91,12 @@ const Template = ({ startIndex, tileCount, displayCount, minDisplayCount, showAr
             width: '100%',
           }}
         >
-          {randomColors.map((color, i) => (
+          {randomColors.map(({ color, width }, i) => (
             <div
               key={i}
               style={TileCss({
                 color,
-                width: `${i === 3 ? 3 * slideWidth : i === 5 ? 2 * slideWidth : slideWidth}px`,
+                width: `${randomTileSizes ? width : slideWidth}px`,
               })}
             >
               {i + 1}
@@ -99,23 +112,27 @@ export default {
   component: Template,
   title: 'Carousel',
   argTypes: {
+    randomTileSizes: {
+      control: { type: 'boolean' },
+    },
     tileCount: {
       control: { type: 'range', min: 1, max: 50, step: 1 },
     },
-    startIndex: {
-      control: { type: 'range', min: 0, max: 49, step: 1 },
-    },
     slideWidth: {
       control: { type: 'range', min: 1, max: 500, step: 1 },
-    },
-    gridGap: {
-      control: { type: 'range', min: 1, max: 500, step: 1 },
+      if: { arg: 'randomTileSizes', truthy: false },
     },
     displayCount: {
       control: { type: 'range', min: 0, max: 50, step: 1 },
     },
     minDisplayCount: {
       control: { type: 'range', min: 0, max: 50, step: 1 },
+    },
+    startIndex: {
+      control: { type: 'range', min: 0, max: 49, step: 1 },
+    },
+    gridGap: {
+      control: { type: 'range', min: 1, max: 500, step: 1 },
     },
     showArrows: {
       control: { type: 'boolean' },
@@ -125,11 +142,12 @@ export default {
 
 export const Carousel = Template.bind({})
 Carousel.args = {
+  randomTileSizes: false,
   tileCount: 25,
-  startIndex: 0,
   slideWidth: 150,
-  gridGap: 15,
   displayCount: 4,
   minDisplayCount: 0,
+  startIndex: 0,
+  gridGap: 15,
   showArrows: true,
 }
