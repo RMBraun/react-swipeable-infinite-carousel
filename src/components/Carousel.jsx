@@ -38,14 +38,19 @@ const SlidesContainerCss = ({ gridGap, isScrolling, isDragging }) => ({
   transition: `transform ${isScrolling || isDragging ? '0ms' : '500ms'}`,
 })
 
-const Arrow = ({ isLeft, isHidden, style, onClick }) => {
+const Arrow = ({ isLeft, isHidden, scrollBy }) => {
+  const onClick = useCallback((scrollCount) => (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    scrollBy(scrollCount)
+  })
+
   return (
     <button
       className={`${styles.arrow} ${isLeft ? styles.leftArrow : styles.rightArrow} ${
         isHidden ? styles.isArrowHidden : ''
       }`}
-      style={style}
-      onClick={onClick}
+      onClick={onClick(isLeft ? -1 : 1)}
     >
       <span className={`${styles.arrowIcon} ${isLeft ? styles.leftArrowIcon : styles.rightArrowIcon}`} />
     </button>
@@ -59,6 +64,7 @@ export const Carousel = ({
   gridGap = 10,
   showArrows = true,
   renderArrows: RenderArrows = Arrow,
+  scrollSpeed = 75,
   style = {},
   slideContainerStyle = {},
   slideStyle = {},
@@ -182,10 +188,7 @@ export const Carousel = ({
   }, [])
 
   const onArrowClick = useCallback(
-    (indexOffset) => (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-
+    (indexOffset) => {
       const newIndex = index + indexOffset
       const newBoundIndex = getBoundIndex(newIndex)
 
@@ -275,7 +278,7 @@ export const Carousel = ({
         setIsScrolling(true)
       }
 
-      const newScrollDelta = translateOffset.current - scrollDirection * Math.min(75, Math.abs(scrollDelta))
+      const newScrollDelta = translateOffset.current - scrollDirection * Math.min(scrollSpeed, Math.abs(scrollDelta))
 
       const debounceFunc = () => {
         setIsScrolling(false)
@@ -310,6 +313,7 @@ export const Carousel = ({
     },
     [
       slideAnchors,
+      scrollSpeed,
       gridGap,
       isScrolling,
       minScrollX,
@@ -350,7 +354,7 @@ export const Carousel = ({
           isLeft={true}
           isRight={false}
           isHidden={isScrolling || isDragging || !showLeftArrow}
-          onClick={showLeftArrow ? onArrowClick(-1) : undefined}
+          scrollBy={onArrowClick}
         />
       )}
       <div
@@ -381,7 +385,7 @@ export const Carousel = ({
           isLeft={false}
           isRight={true}
           isHidden={isScrolling || isDragging || !showRightArrow}
-          onClick={showRightArrow ? onArrowClick(1) : undefined}
+          scrollBy={onArrowClick}
         />
       )}
     </div>

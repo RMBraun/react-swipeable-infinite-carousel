@@ -4,9 +4,9 @@ export interface CarouselProps {
   minDisplayCount?: number
   displayCount?: number
   gridGap?: number
-  slideWidth: number
   showArrows?: boolean
   renderArrows?: React.FC<any>
+  scrollSpeed?: number
   style?: React.CSSProperties
   slideContainerStyle?: React.CSSProperties
   slideStyle?: React.CSSProperties
@@ -15,8 +15,8 @@ export interface CarouselProps {
 export interface RenderArrowsProps {
   isLeft: boolean
   isRight: boolean
-  style: React.CSSProperties
   isHidden: boolean
-  onClick?: React.EventHandler<React.MouseEvent>
+  scrollBy: (scrollBy: number) => void
 }
+
 export declare const Carousel: React.FC<CarouselProps>
