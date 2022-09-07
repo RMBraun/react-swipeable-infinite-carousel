@@ -30,7 +30,7 @@ const TileCss = ({ color, width }) => ({
   alignItems: 'center',
   fontSize: '4rem',
   width: `${width}`,
-  height: '100%',
+  height: '250px',
   backgroundColor: `${color}`,
   borderRadius: '5px',
   color: 'white',
@@ -83,13 +83,6 @@ const Template = ({
           displayCount={displayCount}
           minDisplayCount={minDisplayCount}
           showArrows={showArrows}
-          style={{
-            height: '300px',
-          }}
-          slideContainerStyle={{
-            height: '300px',
-            width: '100%',
-          }}
         >
           {randomColors.map(({ color, width }, i) => (
             <div
@@ -99,7 +92,7 @@ const Template = ({
                 width: `${randomTileSizes ? width : slideWidth}px`,
               })}
             >
-              {i + 1}
+              {i}
             </div>
           ))}
         </CarouselEle>
