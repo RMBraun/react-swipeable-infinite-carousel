@@ -57,14 +57,31 @@ const Arrow = ({ isLeft, isHidden, scrollBy }) => {
   )
 }
 
-const Indexes = memo(function Indexes({ startIndex, endIndex, slideAnchors }) {
+const Indexes = memo(function Indexes({ startIndex, endIndex, slideAnchors, scrollBy }) {
+  const containerRef = useRef()
+  const gap = 5
+  const borderWidth = 2
+  const indexShowCount = 10
+  const width = useMemo(() => {
+    const containerWidth = containerRef.current?.clientWidth || 0
+
+    return (containerWidth - (indexShowCount - 1) * gap) / indexShowCount
+  }, [containerRef.current?.clientWidth])
+
   return (
-    <div className={styles.indexContainer}>
+    <div ref={containerRef} className={styles.indexContainer} style={{ gap: `${gap}px` }}>
       {slideAnchors?.map((_, i) => (
-        <span
+        <button
           key={i}
           className={styles.index}
-          style={{ backgroundColor: i >= startIndex && i <= endIndex ? 'black' : 'transparent' }}
+          style={{
+            backgroundColor: i >= startIndex && i <= endIndex ? 'black' : 'transparent',
+            width: `${width}px`,
+            borderWidth: `${borderWidth}px`,
+          }}
+          onClick={() => {
+            scrollBy(i - startIndex)
+          }}
         />
       ))}
     </div>
@@ -457,6 +474,7 @@ export const Carousel = ({
           endIndex={index.right}
           slideCount={slideCount}
           slideAnchors={slideAnchors}
+          scrollBy={onArrowClick}
         />
       )}
     </div>

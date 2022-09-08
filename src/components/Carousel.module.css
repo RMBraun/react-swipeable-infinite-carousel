@@ -90,19 +90,21 @@
 
 .indexContainer {
   display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
   flex-direction: row;
+  width: 100%;
+  flex-wrap: wrap;
   align-items: center;
   margin: 10px;
 }
 
 .index {
-  width: 10px;
-  height: 10px;
-  border: 2px solid black;
-  border-radius: 50%;
+  border: none;
+  padding: 0px;
+  margin: 0px;
+  height: 12px;
+  border-style: solid;
+  border-color: black;
   background-color: transparent;
-
+  cursor: pointer;
   transition: background-color 250ms;
 }
