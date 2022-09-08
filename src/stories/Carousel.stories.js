@@ -20,17 +20,16 @@ const CarouselContainerCss = {
   border: '5px solid gray',
   padding: '15px',
   width: 'calc(100% - 30px)',
-  height: 'calc(100% - 30px)',
 }
 
-const TileCss = ({ color, width }) => ({
+const TileCss = ({ color, width, height }) => ({
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
   alignItems: 'center',
   fontSize: '4rem',
   width: `${width}`,
-  height: '250px',
+  height: `${height}`,
   backgroundColor: `${color}`,
   borderRadius: '5px',
   color: 'white',
@@ -48,6 +47,7 @@ const Template = ({
   minDisplayCount,
   showArrows,
   slideWidth,
+  slideHeight,
   gridGap,
 }) => {
   const randomColors = useMemo(() => {
@@ -90,6 +90,7 @@ const Template = ({
               style={TileCss({
                 color,
                 width: `${randomTileSizes ? width : slideWidth}px`,
+                height: `${slideHeight}px`,
               })}
             >
               {i}
@@ -115,6 +116,9 @@ export default {
       control: { type: 'range', min: 1, max: 500, step: 1 },
       if: { arg: 'randomTileSizes', truthy: false },
     },
+    slideHeight: {
+      control: { type: 'range', min: 1, max: 500, step: 1 },
+    },
     displayCount: {
       control: { type: 'range', min: 0, max: 50, step: 1 },
     },
@@ -138,6 +142,7 @@ Carousel.args = {
   randomTileSizes: false,
   tileCount: 25,
   slideWidth: 150,
+  slideHeight: 250,
   displayCount: 4,
   minDisplayCount: 0,
   startIndex: 0,

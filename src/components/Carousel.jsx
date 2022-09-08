@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useCallback, useEffect, useLayoutEffect } from 'react'
+import React, { useState, useMemo, useRef, useCallback, useEffect, useLayoutEffect, memo } from 'react'
 import styles from './Carousel.module.css'
 
 const getClientXOffset = (e) => e?.touches?.[0]?.clientX || e?.clientX || 0
@@ -57,30 +57,19 @@ const Arrow = ({ isLeft, isHidden, scrollBy }) => {
   )
 }
 
-const Indexes = ({ startIndex, endIndex, slideCount, slideAnchors }) => {
-  const indexes = useMemo(() => {
-    return (
-      <div className={styles.indexContainer}>
-        {slideAnchors?.map((_, i) => (
-          <span
-            key={i}
-            className={styles.index}
-            style={{ backgroundColor: i >= startIndex && i <= endIndex ? 'black' : 'transparent' }}
-          />
-        ))}
-      </div>
-    )
-  }, [startIndex, endIndex, slideCount])
-
+const Indexes = memo(function Indexes({ startIndex, endIndex, slideAnchors }) {
   return (
-    <>
-      {indexes}
-      <p style={{ margin: 0, padding: 0 }}>
-        {startIndex}-{endIndex}
-      </p>
-    </>
+    <div className={styles.indexContainer}>
+      {slideAnchors?.map((_, i) => (
+        <span
+          key={i}
+          className={styles.index}
+          style={{ backgroundColor: i >= startIndex && i <= endIndex ? 'black' : 'transparent' }}
+        />
+      ))}
+    </div>
   )
-}
+})
 
 export const Carousel = ({
   startIndex = 0,
@@ -130,6 +119,12 @@ export const Carousel = ({
   const [maxIndex, setMaxIndex] = useState(slideCount)
   const [isDragging, setIsDragging] = useState(false)
   const [isScrolling, setIsScrolling] = useState(false)
+  const isMouseHover = useRef(false)
+
+  const onMouseEnter = useCallback(() => {
+    isMouseHover.current = true
+  }, [])
+
   const translateOffset = useRef(getTranslateOffset(index.left))
   const touchStartRef = useRef(0)
   const touchEndRef = useRef(0)
@@ -175,7 +170,7 @@ export const Carousel = ({
 
       return {
         left: getBoundIndex(newIndex.left),
-        right: Math.min(slideCount - 1, newIndex.right),
+        right: Math.max(Math.min(slideCount - 1, newIndex.right), newIndex.left),
       }
     },
     [slideCount, slideAnchors, getBoundIndex],
@@ -287,6 +282,21 @@ export const Carousel = ({
         return
       }
 
+      setIsDragging(false)
+    },
+    [isScrolling, setIsDragging],
+  )
+
+  const onMouseLeave = useCallback(
+    (e) => {
+      isMouseHover.current = false
+      onTouchEnd(e)
+    },
+    [onTouchEnd],
+  )
+
+  useEffect(() => {
+    if (!isDragging) {
       const currentOffset = -1 * translateOffset.current
 
       const newIndex = slideAnchors.reduce((acc, { start, width }, i) => {
@@ -302,11 +312,8 @@ export const Carousel = ({
 
       touchStartRef.current = 0
       touchEndRef.current = 0
-
-      setIsDragging(false)
-    },
-    [isScrolling, slideAnchors, setTranslateOffset, getTranslateOffset, setIndex, getBoundIndex, setIsDragging],
-  )
+    }
+  }, [isDragging])
 
   const onScroll = useCallback(
     (e) => {
@@ -314,7 +321,7 @@ export const Carousel = ({
         return
       }
 
-      const isWheel = e.deltaX === 0 && Math.abs(e.deltaY) > 0
+      const isWheel = isMouseHover.current && e.deltaX === 0 && Math.abs(e.deltaY) > 0
       const scrollDelta = isWheel ? -1 * e.deltaY : e.deltaX
       const scrollDirection = Math.sign(scrollDelta)
 
@@ -425,7 +432,8 @@ export const Carousel = ({
           onMouseDown={onTouchStart}
           onMouseMove={onTouchMove}
           onMouseUp={onTouchEnd}
-          onMouseLeave={onTouchEnd}
+          onMouseLeave={onMouseLeave}
+          onMouseEnter={onMouseEnter}
           onWheel={onScroll}
         >
           {slides.map((slide, i) => (
