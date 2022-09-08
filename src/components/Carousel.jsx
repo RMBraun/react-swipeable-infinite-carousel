@@ -62,11 +62,7 @@ const Indexes = memo(function Indexes({ startIndex, endIndex, slideAnchors, scro
   const gap = 5
   const borderWidth = 2
   const indexShowCount = 10
-  const width = useMemo(() => {
-    const containerWidth = containerRef.current?.clientWidth || 0
-
-    return (containerWidth - (indexShowCount - 1) * gap) / indexShowCount
-  }, [containerRef.current?.clientWidth])
+  const width = useMemo(() => `calc((100% - ${(indexShowCount - 1) * gap}px) / ${indexShowCount})`, [])
 
   return (
     <div ref={containerRef} className={styles.indexContainer} style={{ gap: `${gap}px` }}>
@@ -76,7 +72,7 @@ const Indexes = memo(function Indexes({ startIndex, endIndex, slideAnchors, scro
           className={styles.index}
           style={{
             backgroundColor: i >= startIndex && i <= endIndex ? 'black' : 'transparent',
-            width: `${width}px`,
+            width,
             borderWidth: `${borderWidth}px`,
           }}
           onClick={() => {

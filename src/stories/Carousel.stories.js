@@ -41,6 +41,7 @@ const tileCache = []
 
 const Template = ({
   randomTileSizes,
+  showIndexes,
   startIndex,
   tileCount,
   displayCount,
@@ -83,6 +84,7 @@ const Template = ({
           displayCount={displayCount}
           minDisplayCount={minDisplayCount}
           showArrows={showArrows}
+          showIndexes={showIndexes}
         >
           {randomColors.map(({ color, width }, i) => (
             <div
@@ -107,6 +109,9 @@ export default {
   title: 'Carousel',
   argTypes: {
     randomTileSizes: {
+      control: { type: 'boolean' },
+    },
+    showIndexes: {
       control: { type: 'boolean' },
     },
     tileCount: {
@@ -140,6 +145,7 @@ export default {
 export const Carousel = Template.bind({})
 Carousel.args = {
   randomTileSizes: false,
+  showIndexes: true,
   tileCount: 25,
   slideWidth: 150,
   slideHeight: 250,
