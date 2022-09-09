@@ -21,12 +21,16 @@ yarn add @rybr/react-swipeable-infinite-carousel
 ```jsx
 import { Carousel } from '@rybr/react-swipeable-infinite-carousel'
 
-const CustomArrow = ({ isLeft, isHidden, scrollBy }) => {
+const CustomArrow = ({ 
+  isLeft, //boolean to indicate if this is the right or left arrow
+  isHidden, //should the arrow be hidden? (true during scrollings, dragging, and when there is nothing to scroll)
+  scrollBy //function which takes a number input and will scroll by that amount
+}) => {
   const onClick = useCallback((scrollCount) => (e) => {
     e.preventDefault()
     e.stopPropagation()
     scrollBy(scrollCount)
-  })
+  }, [scrollBy])
 
   return (
     <button
@@ -41,17 +45,53 @@ const CustomArrow = ({ isLeft, isHidden, scrollBy }) => {
   )
 }
 
+const CustomIndexes = ({ 
+  startIndex, //index of the left-most displayed item
+  endIndex,  //index of the right-most displayed item
+  slideAnchors, //information about each slide (start and end scroll offsets and slide width)
+  scrollBy, //function which takes a number input and will scroll by that amount
+]}) => {
+  const onClick = useCallback(
+    (scrollCount) => (e) => {
+      scrollBy(scrollCount)
+    },
+    [scrollBy],
+  )
+
+  return (
+    <div
+      className={'customIndexes'}
+    >
+      {slideAnchors?.map((_, i) => (
+        <button
+          key={i}
+          className={`customIndex ${i >= startIndex && i <= endIndex ? 'isActive' : ''}`}
+          onClick={onClick(i - startIndex)}
+        />
+      ))}
+    </div>
+  )
+}
+
+//NOTE: all props are optional. These are all set as examples
 <Carousel
   startIndex={4} //which index to start on
   gridGap={15} //gap between each tile in px
   displayCount={4} //maximum number of tiles to display
   minDisplayCount={2} //minimum number of tiles to display
   showArrows={!isMobile} //toggles displaying the prebuilt scroll arrows
-  renderArrows={CustomArrow} //function that returns a React.Element (custom scroll arrows)
+  arrowLeftProps={{ onClick: customOnClick }} //props to be sent to the left arrow
+  arrowRightProps={{ onClick: customOnClick }} //props to be sent to the right arrow
+  renderArrows={CustomArrow} //custom scroll arrows
   scrollSpeed={75} //maximum scroll speed in pixels
   style={ backgroundColor: 'red' } //container inline style overrides
   slideContainerStyle={ border: '1px solid blue' } //slides container inline style overrides
   slideStyle={ opacity: 0.5 } //slide container inline style overrides
+  showIndexes={true} //toggles displaying the scroll indexes
+  indexesPerRow={2} //how many indexes to show per row. Each index will be (container width) / indexesPerRow
+  indexContainerProps={{ style: { background: blue }}} //props to be sent to the scroll index container
+  indexProps={{ className: 'customClassName' }} //props to be sent to the scroll indexes
+  customIndexes={CustomIndexes} //custom scroll indexes 
 >
   {randomColors.map((color, i) => (
     <div key={i} style={tileCss}>
@@ -71,6 +111,13 @@ const CustomArrow = ({ isLeft, isHidden, scrollBy }) => {
 | **slideContainerStyle** 	| React.CSSProperties 	| {} 	| Inline style used to overwrite the default `<div>` that wraps the slides (children) 	|
 | **slideStyle** 	| React.CSSProperties 	| {} 	| Inline style used to overwrite the default `<div>` that wraps each slide (each child) 	|
 | **showArrows** 	| boolean 	| true 	| Boolean to toggle displaying the prebuilt scroll arrows 	|
+| **arrowLeftProps** 	| Record<string, unknown> 	| {} 	| props to send to the left arrow container 	|
+| **arrowRightProps** 	| Record<string, unknown> 	| {} 	| props to send to the right arrow container 	|
 | **scrollSpeed** 	| number 	| 75 	| The maximum scroll speed allowed in pixels 	|
-| **renderArrows** 	| ({isLeft,isRight,isHidden,scrollBy}) => React.Element 	|  	| Function that returns a React.Element to be used as the scroll arrows.<br>`isLeft` and `isRight` are booleans that define if it is the right or left scroll arrow.<br>`isHidden` defines if the arrows should be hidden (is true while scrollings/dragging and when you cannot scroll any more).<br>`scrollBy` should be called when the button is pressed and will scroll by the amount specified. 	|
-| **children** 	| React.ReactNode  	|  	| The slides you wish to display in the carousel 	|
+| **renderArrows** 	| React.FC\<RenderArrowsProps\> 	|  	| Function that returns a React.Element to be used as the scroll arrows. 	|
+| **showIndexes** 	| boolean 	| true 	| Show the scrolling index indicators 	|
+| **indexesPerRow** 	| number 	| 0 	| How many indexes to show per row (will wrap). <br>A value of 0, null, or undefined, is the equivalent to setting the value to 1. 	|
+| **indexContainerProps** 	| Record<string, unknown> 	| {} 	| props to send to the index container 	|
+| **indexProps** 	| Record<string, unknown> 	| {} 	| props to send to the index icon 	|
+| **renderIndexes** 	| React.FC\<RenderIndexesProps\> 	|  	| Function that returns a React.Element to be used as the scroll indexes 	|
+| **children** 	| React.Node \| Array<React.Node> 	|  	| The slides you wish to display in the carousel 	|

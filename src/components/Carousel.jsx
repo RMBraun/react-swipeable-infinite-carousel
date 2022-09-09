@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React, { useState, useMemo, useRef, useCallback, useEffect, useLayoutEffect, memo } from 'react'
 import styles from './Carousel.module.css'
 
@@ -38,51 +39,92 @@ const SlidesContainerCss = ({ gridGap, isScrolling, isDragging }) => ({
   transition: `transform ${isScrolling || isDragging ? '0ms' : '500ms'}`,
 })
 
-const Arrow = ({ isLeft, isHidden, scrollBy }) => {
-  const onClick = useCallback((scrollCount) => (e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    scrollBy(scrollCount)
-  })
+// eslint-disable-next-line no-unused-vars
+const Arrow = ({ isLeft, isRight, isHidden, scrollBy, arrowProps, arrowIconProps }) => {
+  const arrowClassName = useMemo(
+    () =>
+      `${styles.arrow} ${isLeft ? styles.leftArrow : styles.rightArrow} ${isHidden ? styles.isArrowHidden : ''} ${
+        arrowProps?.className || ''
+      }`,
+    [arrowProps?.className, isLeft, isHidden],
+  )
+
+  const onClick = useCallback(
+    (callback, scrollCount) => (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+
+      if (typeof callback === 'function') {
+        callback(e)
+      }
+
+      scrollBy(scrollCount)
+    },
+    [arrowProps?.onClick, scrollBy, isLeft],
+  )
+
+  const iconClassName = useMemo(
+    () =>
+      `${styles.arrowIcon} ${isLeft ? styles.leftArrowIcon : styles.rightArrowIcon} ${arrowIconProps?.className || ''}`,
+    [arrowIconProps?.className, isLeft],
+  )
 
   return (
-    <button
-      className={`${styles.arrow} ${isLeft ? styles.leftArrow : styles.rightArrow} ${
-        isHidden ? styles.isArrowHidden : ''
-      }`}
-      onClick={onClick(isLeft ? -1 : 1)}
-    >
-      <span className={`${styles.arrowIcon} ${isLeft ? styles.leftArrowIcon : styles.rightArrowIcon}`} />
+    <button {...arrowProps} className={arrowClassName} onClick={onClick(arrowProps?.onClick, isLeft ? -1 : 1)}>
+      <span {...arrowIconProps} className={iconClassName} />
     </button>
   )
 }
 
-const Indexes = memo(function Indexes({ startIndex, endIndex, slideAnchors, scrollBy }) {
+// eslint-disable-next-line no-unused-vars
+const Indexes = ({ startIndex, endIndex, indexesPerRow, slideAnchors, scrollBy, indexContainerProps, indexProps }) => {
   const containerRef = useRef()
   const gap = 5
   const borderWidth = 2
-  const indexShowCount = 10
-  const width = useMemo(() => `calc((100% - ${(indexShowCount - 1) * gap}px) / ${indexShowCount})`, [])
+  const width = useMemo(() => `calc((100% - ${(indexesPerRow - 1) * gap}px) / ${indexesPerRow})`, [indexesPerRow])
+
+  const containerClassName = useMemo(
+    () => `${styles.indexContainer} ${indexContainerProps?.className || ''}`,
+    [indexContainerProps?.className],
+  )
+
+  const iconClassName = useMemo(() => `${styles.index} ${indexProps?.className || ''}`, [indexProps?.className])
+
+  const onClick = useCallback(
+    (callback, scrollCount) => (e) => {
+      if (typeof callback === 'function') {
+        callback(e)
+      }
+
+      scrollBy(scrollCount)
+    },
+    [indexProps?.onClick, scrollBy, startIndex],
+  )
 
   return (
-    <div ref={containerRef} className={styles.indexContainer} style={{ gap: `${gap}px` }}>
+    <div
+      {...indexContainerProps}
+      ref={containerRef}
+      className={containerClassName}
+      style={{ gap: `${gap}px`, ...indexContainerProps?.style }}
+    >
       {slideAnchors?.map((_, i) => (
         <button
           key={i}
-          className={styles.index}
+          {...indexProps}
+          className={iconClassName}
           style={{
             backgroundColor: i >= startIndex && i <= endIndex ? 'black' : 'transparent',
             width,
             borderWidth: `${borderWidth}px`,
+            ...indexProps?.style,
           }}
-          onClick={() => {
-            scrollBy(i - startIndex)
-          }}
+          onClick={onClick(indexProps?.onClick, i - startIndex)}
         />
       ))}
     </div>
   )
-})
+}
 
 export const Carousel = ({
   startIndex = 0,
@@ -91,9 +133,14 @@ export const Carousel = ({
   gridGap = 10,
   showArrows = true,
   renderArrows: RenderArrows = Arrow,
+  arrowLeftProps = {},
+  arrowRightProps = {},
   scrollSpeed = 75,
   showIndexes = true,
+  indexesPerRow = 0,
   renderIndexes: RenderIndexes = Indexes,
+  indexContainerProps = {},
+  indexProps = {},
   style = {},
   slideContainerStyle = {},
   slideStyle = {},
@@ -200,20 +247,22 @@ export const Carousel = ({
 
   const onResize = () => {
     const newSlideAnchors = calculateAnchors(slidesRefs, gridGap)
-    const containerWidth = containerRef.current.clientWidth
-    const lastEnd = newSlideAnchors[newSlideAnchors.length - 1].end
-    const newMaxIndex = getBoundIndex(
-      newSlideAnchors.findIndex(({ start }) => start + containerWidth >= lastEnd),
-      newSlideAnchors.length - 1,
-    )
-    const newLeftIndex = getBoundIndex(indexRef.current.left, newMaxIndex)
-    const newTranslateOffset = getTranslateOffset(newLeftIndex, newSlideAnchors)
-    const newScrollIndex = getScrollIndex(newTranslateOffset, newSlideAnchors)
+    if (newSlideAnchors?.length) {
+      const containerWidth = containerRef.current.clientWidth
+      const lastEnd = newSlideAnchors[newSlideAnchors.length - 1].end
+      const newMaxIndex = getBoundIndex(
+        newSlideAnchors.findIndex(({ start }) => start + containerWidth >= lastEnd),
+        newSlideAnchors.length - 1,
+      )
+      const newLeftIndex = getBoundIndex(indexRef.current.left, newMaxIndex)
+      const newTranslateOffset = getTranslateOffset(newLeftIndex, newSlideAnchors)
+      const newScrollIndex = getScrollIndex(newTranslateOffset, newSlideAnchors)
 
-    setIndex(newScrollIndex)
-    setSlideAnchors(newSlideAnchors)
-    setMaxIndex(newMaxIndex)
-    setTranslateOffset(newTranslateOffset)
+      setIndex(newScrollIndex)
+      setSlideAnchors(newSlideAnchors)
+      setMaxIndex(newMaxIndex)
+      setTranslateOffset(newTranslateOffset)
+    }
   }
 
   useLayoutEffect(() => {
@@ -429,6 +478,7 @@ export const Carousel = ({
             isRight={false}
             isHidden={isScrolling || isDragging || !showLeftArrow}
             scrollBy={onArrowClick}
+            arrowProps={arrowLeftProps}
           />
         )}
         <div
@@ -461,6 +511,7 @@ export const Carousel = ({
             isRight={true}
             isHidden={isScrolling || isDragging || !showRightArrow}
             scrollBy={onArrowClick}
+            arrowProps={arrowRightProps}
           />
         )}
       </div>
@@ -468,9 +519,11 @@ export const Carousel = ({
         <RenderIndexes
           startIndex={index.left}
           endIndex={index.right}
-          slideCount={slideCount}
+          indexesPerRow={indexesPerRow || slideCount}
           slideAnchors={slideAnchors}
           scrollBy={onArrowClick}
+          indexContainerProps={indexContainerProps}
+          indexProps={indexProps}
         />
       )}
     </div>

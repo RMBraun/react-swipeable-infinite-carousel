@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { Carousel as CarouselEle } from '../components/Carousel'
 import './Carousel.css'
 
@@ -42,6 +42,7 @@ const tileCache = []
 const Template = ({
   randomTileSizes,
   showIndexes,
+  indexesPerRow,
   startIndex,
   tileCount,
   displayCount,
@@ -50,7 +51,9 @@ const Template = ({
   slideWidth,
   slideHeight,
   gridGap,
+  CustomArrow,
 }) => {
+  console.log(CustomArrow)
   const randomColors = useMemo(() => {
     if (!tileCount || tileCount <= 0) {
       return []
@@ -85,6 +88,8 @@ const Template = ({
           minDisplayCount={minDisplayCount}
           showArrows={showArrows}
           showIndexes={showIndexes}
+          indexesPerRow={indexesPerRow}
+          renderArrows={CustomArrow}
         >
           {randomColors.map(({ color, width }, i) => (
             <div
@@ -114,6 +119,9 @@ export default {
     showIndexes: {
       control: { type: 'boolean' },
     },
+    indexesPerRow: {
+      control: { type: 'range', min: 0, max: 50, steps: 1 },
+    },
     tileCount: {
       control: { type: 'range', min: 1, max: 50, step: 1 },
     },
@@ -142,10 +150,11 @@ export default {
   },
 }
 
-export const Carousel = Template.bind({})
-Carousel.args = {
+export const DefaultCarousel = Template.bind({})
+DefaultCarousel.args = {
   randomTileSizes: false,
   showIndexes: true,
+  indexesPerRow: 0,
   tileCount: 25,
   slideWidth: 150,
   slideHeight: 250,
@@ -154,4 +163,39 @@ Carousel.args = {
   startIndex: 0,
   gridGap: 15,
   showArrows: true,
+}
+
+export const CustomArrows = Template.bind({})
+CustomArrows.args = {
+  randomTileSizes: false,
+  showIndexes: true,
+  indexesPerRow: 0,
+  tileCount: 25,
+  slideWidth: 150,
+  slideHeight: 250,
+  displayCount: 4,
+  minDisplayCount: 0,
+  startIndex: 0,
+  gridGap: 15,
+  showArrows: true,
+  CustomArrow: ({ isLeft, isHidden, scrollBy }) => {
+    const onClick = useCallback(
+      (scrollCount) => (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+
+        scrollBy(scrollCount)
+      },
+      [scrollBy, isLeft],
+    )
+
+    return (
+      <button
+        className={`customArrow ${isHidden ? 'isArrowHidden' : ''} ${isLeft ? 'isLeftArrow' : ''}`}
+        onClick={onClick(isLeft ? -1 : 1)}
+      >
+        <span className={`customArrowIcon ${isLeft ? 'isLeftArrowIcon' : 'isRightArrowIcon'}`} />
+      </button>
+    )
+  },
 }

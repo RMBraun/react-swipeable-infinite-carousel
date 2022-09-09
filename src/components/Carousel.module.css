@@ -24,8 +24,8 @@
 }
 
 .arrowIcon {
-  width: 35%;
-  height: 35%;
+  width: 24px;
+  height: 24px;
   border: 6px solid #1b1b1b;
   border-radius: 5px;
   transition: border-color 500ms;
@@ -55,9 +55,10 @@
   margin: 0px;
   border: none;
   width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: transparent;
+  height: 100%;
+  opacity: 0.7;
+  background-color: #929292a9;
+  mix-blend-mode: luminosity;
   transition: opacity 500ms, background-color 500ms;
   z-index: 2;
   cursor: pointer;
@@ -70,22 +71,22 @@
 
 .arrow:hover {
   opacity: 1;
-  background-color: #efefefa9;
-
+}
+.arrow:focus-visible {
+  opacity: 1;
 }
 
 .arrow:active {
-  opacity: 1;
-  background-color: #929292a9;
+  background-color: #6b6b6ba9;
 
 }
 
 .rightArrow {
-  right: 10px;
+  right: 0px;
 }
 
 .leftArrow {
-  left: 10px;
+  left: 0px;
 }
 
 .indexContainer {
@@ -101,10 +102,11 @@
   border: none;
   padding: 0px;
   margin: 0px;
-  height: 12px;
+  height: 8px;
+  border-radius: 2px;
   border-style: solid;
-  border-color: black;
+  border-color: rgba(50, 50, 50, 0.5);
   background-color: transparent;
   cursor: pointer;
-  transition: background-color 250ms;
+  transition: background-color 500ms;
 }
