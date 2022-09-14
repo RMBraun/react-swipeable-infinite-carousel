@@ -1,14 +1,14 @@
 /* eslint-disable react/prop-types */
-import React, { useState, useMemo, useRef, useCallback, useEffect, useLayoutEffect, memo } from 'react'
+import React, { useState, useMemo, useRef, useCallback, useEffect, useLayoutEffect } from 'react'
 import styles from './Carousel.module.css'
 
 const getClientXOffset = (e) => e?.touches?.[0]?.clientX || e?.clientX || 0
 
-const calculateAnchors = (slideRefs = [], gridGap = 0) =>
+const calculateAnchors = (slideRefs = []) =>
   slideRefs.reduce((acc, ref, i) => {
     if (ref?.current) {
       const width = ref.current.clientWidth
-      const start = i === 0 ? 0 : acc[i - 1].end + gridGap
+      const start = i === 0 ? 0 : acc[i - 1].end
       const end = start + width
       acc.push({ start, end, width })
     }
@@ -34,8 +34,7 @@ const ContainerCss = ({ displayCount, minDisplayCount, slideAnchors }) => {
   }
 }
 
-const SlidesContainerCss = ({ gridGap, isScrolling, isDragging }) => ({
-  gap: `${gridGap}px`,
+const SlidesContainerCss = ({ isScrolling, isDragging }) => ({
   transition: `transform ${isScrolling || isDragging ? '0ms' : '500ms'}`,
 })
 
@@ -128,6 +127,11 @@ const Indexes = ({ startIndex, endIndex, indexesPerRow, slideAnchors, scrollBy, 
 
 export const Carousel = ({
   startIndex = 0,
+  isScrollable = true,
+  isDraggable = true,
+  hasDragMomentum = true,
+  dragMomentumSpeed = 25,
+  dragMomentumDecay = 0.98,
   minDisplayCount = 0,
   displayCount = 0,
   gridGap = 10,
@@ -146,6 +150,8 @@ export const Carousel = ({
   slideStyle = {},
   children,
 }) => {
+  const momentumTimeoutId = useRef()
+  const currentDragSpeed = useRef(0)
   const resizeObserverRef = useRef()
   const slides = React.Children.toArray(children) || []
   const slideCount = slides.length
@@ -179,13 +185,9 @@ export const Carousel = ({
   const [maxIndex, setMaxIndex] = useState(slideCount)
   const [isDragging, setIsDragging] = useState(false)
   const [isScrolling, setIsScrolling] = useState(false)
-  const isMouseHover = useRef(false)
+  const isMomentum = useRef(false)
 
-  const onMouseEnter = useCallback(() => {
-    isMouseHover.current = true
-  }, [])
-
-  const translateOffset = useRef(getTranslateOffset(index.left))
+  const translateOffset = useRef(() => getTranslateOffset(index.left))
   const touchStartRef = useRef(0)
   const touchEndRef = useRef(0)
   const scrollDebounceId = useRef()
@@ -246,9 +248,9 @@ export const Carousel = ({
   }, [])
 
   const onResize = () => {
-    const newSlideAnchors = calculateAnchors(slidesRefs, gridGap)
+    const newSlideAnchors = calculateAnchors(slidesRefs)
     if (newSlideAnchors?.length) {
-      const containerWidth = containerRef.current.clientWidth
+      const containerWidth = slideContainerRef.current.clientWidth
       const lastEnd = newSlideAnchors[newSlideAnchors.length - 1].end
       const newMaxIndex = getBoundIndex(
         newSlideAnchors.findIndex(({ start }) => start + containerWidth >= lastEnd),
@@ -302,30 +304,37 @@ export const Carousel = ({
 
   const onTouchStart = useCallback(
     (e) => {
-      if (isScrolling || e.touches?.length > 1) {
+      if (momentumTimeoutId.current) {
+        cancelAnimationFrame(momentumTimeoutId.current)
+      }
+
+      if (!isDraggable || isScrolling || e.touches?.length > 1) {
         return
       }
 
+      isMomentum.current = false
       setIsDragging(true)
 
       const xOffset = getClientXOffset(e)
       touchStartRef.current = xOffset
       touchEndRef.current = xOffset
     },
-    [isScrolling, setIsDragging],
+    [isDraggable, isScrolling, setIsDragging],
   )
 
   const onTouchMove = useCallback(
     (e) => {
       e.stopPropagation()
 
-      if (!isDragging || isScrolling) {
+      if (isMomentum.current || !isDraggable || !isDragging || isScrolling) {
         return
       }
 
       touchEndRef.current = getClientXOffset(e)
       const delta = touchStartRef.current - touchEndRef.current
       touchStartRef.current = touchEndRef.current
+
+      currentDragSpeed.current = delta
 
       if (delta !== 0) {
         const newTranslateOffset = translateOffset.current - delta
@@ -335,30 +344,68 @@ export const Carousel = ({
         setTranslateOffset(newTranslateOffset)
       }
     },
-    [slideAnchors, isScrolling, isDragging, index, setTranslateOffset],
+    [isDraggable, slideAnchors, isScrolling, isDragging, index, setTranslateOffset],
   )
 
   const onTouchEnd = useCallback(
     (e) => {
-      if (isScrolling || e.touches?.length > 0) {
+      if (momentumTimeoutId.current) {
+        cancelAnimationFrame(momentumTimeoutId.current)
+      }
+
+      if (!isDraggable || isScrolling || e.touches?.length > 0) {
         return
       }
 
-      setIsDragging(false)
-    },
-    [isScrolling, setIsDragging],
-  )
+      if (hasDragMomentum) {
+        isMomentum.current = true
 
-  const onMouseLeave = useCallback(
-    (e) => {
-      isMouseHover.current = false
-      onTouchEnd(e)
+        const momentumFunc = (speed) => {
+          momentumTimeoutId.current = requestAnimationFrame(() => {
+            const newTranslateOffset = translateOffset.current - speed
+
+            if (Math.abs(speed) <= 1 || newTranslateOffset >= maxScrollX || newTranslateOffset <= minScrollX) {
+              isMomentum.current = false
+              setIsDragging(false)
+            } else {
+              const newScrollIndex = getScrollIndex(newTranslateOffset)
+
+              setIndex(newScrollIndex)
+              setTranslateOffset(newTranslateOffset)
+
+              momentumFunc(speed * dragMomentumDecay)
+            }
+          })
+        }
+
+        momentumFunc(
+          currentDragSpeed.current < 0
+            ? Math.max(currentDragSpeed.current, -dragMomentumSpeed)
+            : Math.min(currentDragSpeed.current, dragMomentumSpeed),
+        )
+        currentDragSpeed.current = 0
+      } else {
+        setIsDragging(false)
+      }
     },
-    [onTouchEnd],
+    [
+      hasDragMomentum,
+      dragMomentumSpeed,
+      dragMomentumDecay,
+      minScrollX,
+      maxScrollX,
+      isDraggable,
+      isScrolling,
+      setIsDragging,
+    ],
   )
 
   useEffect(() => {
-    if (!isDragging) {
+    if (!isDragging || !isDraggable) {
+      if (momentumTimeoutId.current) {
+        cancelAnimationFrame(momentumTimeoutId.current)
+      }
+
       const currentOffset = -1 * translateOffset.current
 
       const newIndex = slideAnchors.reduce((acc, { start, width }, i) => {
@@ -375,15 +422,15 @@ export const Carousel = ({
       touchStartRef.current = 0
       touchEndRef.current = 0
     }
-  }, [isDragging])
+  }, [isDragging, isDraggable])
 
   const onScroll = useCallback(
     (e) => {
-      if (isDragging) {
+      if (!isScrollable || isDragging) {
         return
       }
 
-      const isWheel = isMouseHover.current && e.deltaX === 0 && Math.abs(e.deltaY) > 0
+      const isWheel = e.deltaX === 0 && Math.abs(e.deltaY) > 0
       const scrollDelta = isWheel ? -1 * e.deltaY : e.deltaX
       const scrollDirection = Math.sign(scrollDelta)
 
@@ -394,7 +441,7 @@ export const Carousel = ({
         return
       }
 
-      if (!isScrolling && !isWheel) {
+      if (!isScrolling) {
         setIsScrolling(true)
       }
 
@@ -434,10 +481,10 @@ export const Carousel = ({
       }
     },
     [
+      isScrollable,
       index,
       slideAnchors,
       scrollSpeed,
-      gridGap,
       isScrolling,
       minScrollX,
       translateOffset,
@@ -451,11 +498,10 @@ export const Carousel = ({
   const slideContainerCss = useMemo(
     () =>
       SlidesContainerCss({
-        gridGap,
         isScrolling,
         isDragging,
       }),
-    [gridGap, isScrolling, isDragging],
+    [isScrolling, isDragging],
   )
 
   return (
@@ -471,7 +517,7 @@ export const Carousel = ({
       }}
       ref={containerRef}
     >
-      <div className={styles.slidesAndArrowsContainer}>
+      <div className={styles.slidesAndArrowsContainer} onMouseLeave={onTouchEnd}>
         {showArrows && (
           <RenderArrows
             isLeft={true}
@@ -495,12 +541,14 @@ export const Carousel = ({
           onMouseDown={onTouchStart}
           onMouseMove={onTouchMove}
           onMouseUp={onTouchEnd}
-          onMouseLeave={onMouseLeave}
-          onMouseEnter={onMouseEnter}
           onWheel={onScroll}
         >
           {slides.map((slide, i) => (
-            <div style={slideStyle} ref={slidesRefs[i]} key={i}>
+            <div
+              style={{ paddingRight: `${i === slides.length ? 0 : gridGap}px`, ...slideStyle }}
+              ref={slidesRefs[i]}
+              key={i}
+            >
               {slide}
             </div>
           ))}

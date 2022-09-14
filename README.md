@@ -6,7 +6,7 @@ Simple swipeable, draggable, and scrollable React carousel component.
 ## Currently in progress:
 
 - Infinite carousel
-- index tracker + custom index tracker
+- scroll momentum for dragging
 
 ## How to install:
 
@@ -104,6 +104,11 @@ const CustomIndexes = ({
 |  	| **Type** 	| **Default Value** 	| **Description** 	|
 |---	|---	|---	|---	|
 | **startIndex** 	| int 	| 0 	| Which index to start on 	|
+| **isScrollable** 	| boolean 	| true 	| Is the carousel scrollable (mouse wheel + trackpad) 	|
+| **isDraggable** 	| boolean 	| true 	| Is the carousel draggable (mouse drag + touch screens) 	|
+| **hasDragMomentum** 	| boolean 	| true 	| Toggles whether there is momentum when dragging (mimics scroll momentum for touch events) 	|
+| **dragMomentumSpeed** 	| number 	| 25 	| Maximum speed in pixels that the drag momentum can be 	|
+| **dragMomentumDecay** 	| number 	| 0.98 	| The rate of decay of the drag momentum (mulplicative with itself). Each frame, the drag momentum speed will be 98% of what it was last frame. 	|
 | **displayCount** 	| int 	| 0 	| How many slides you wish to display. <br>If no value or 0 is set then the carousel will take up maximum width.<br>Overflow will be hidden.<br>Carousel `width` CSS property will be equal to the smallest value needed in order to display the desired slide count. 	|
 | **minDisplayCount** 	| int 	| 0 	| Minimum number of slides to display.<br>If no value or 0 is set then no minimum width will be applied.<br>Overflow is **not** hidden.<br>Carousel `min-width` CSS property will be equal to the smallest value needed in order to display the desired slide count. 	|
 | **gridGap** 	| number 	| 10 	| The gap between tiles in CSS pixels 	|
@@ -114,10 +119,10 @@ const CustomIndexes = ({
 | **arrowLeftProps** 	| Record<string, unknown> 	| {} 	| props to send to the left arrow container 	|
 | **arrowRightProps** 	| Record<string, unknown> 	| {} 	| props to send to the right arrow container 	|
 | **scrollSpeed** 	| number 	| 75 	| The maximum scroll speed allowed in pixels 	|
-| **renderArrows** 	| React.FC\<RenderArrowsProps\> 	|  	| Function that returns a React.Element to be used as the scroll arrows. 	|
+| **renderArrows** 	| React.FC<RenderArrowsProps> 	|  	| Function that returns a React.Element to be used as the scroll arrows. 	|
 | **showIndexes** 	| boolean 	| true 	| Show the scrolling index indicators 	|
 | **indexesPerRow** 	| number 	| 0 	| How many indexes to show per row (will wrap). <br>A value of 0, null, or undefined, is the equivalent to setting the value to 1. 	|
 | **indexContainerProps** 	| Record<string, unknown> 	| {} 	| props to send to the index container 	|
 | **indexProps** 	| Record<string, unknown> 	| {} 	| props to send to the index icon 	|
-| **renderIndexes** 	| React.FC\<RenderIndexesProps\> 	|  	| Function that returns a React.Element to be used as the scroll indexes 	|
+| **renderIndexes** 	| React.FC<RenderIndexesProps> 	|  	| Function that returns a React.Element to be used as the scroll indexes 	|
 | **children** 	| React.Node \| Array<React.Node> 	|  	| The slides you wish to display in the carousel 	|

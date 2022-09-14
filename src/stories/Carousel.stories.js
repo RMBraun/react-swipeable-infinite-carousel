@@ -1,3 +1,4 @@
+import { range } from 'lodash'
 import React, { useCallback, useMemo } from 'react'
 import { Carousel as CarouselEle } from '../components/Carousel'
 import './Carousel.css'
@@ -51,9 +52,13 @@ const Template = ({
   slideWidth,
   slideHeight,
   gridGap,
+  scrollable,
+  draggable,
+  hasDragMomentum,
+  dragMomentumSpeed,
+  dragMomentumDecay,
   CustomArrow,
 }) => {
-  console.log(CustomArrow)
   const randomColors = useMemo(() => {
     if (!tileCount || tileCount <= 0) {
       return []
@@ -90,6 +95,11 @@ const Template = ({
           showIndexes={showIndexes}
           indexesPerRow={indexesPerRow}
           renderArrows={CustomArrow}
+          isScrollable={scrollable}
+          isDraggable={draggable}
+          hasDragMomentum={hasDragMomentum}
+          dragMomentumSpeed={dragMomentumSpeed}
+          dragMomentumDecay={dragMomentumDecay}
         >
           {randomColors.map(({ color, width }, i) => (
             <div
@@ -115,6 +125,21 @@ export default {
   argTypes: {
     randomTileSizes: {
       control: { type: 'boolean' },
+    },
+    scrollable: {
+      control: { type: 'boolean' },
+    },
+    draggable: {
+      control: { type: 'boolean' },
+    },
+    hasDragMomentum: {
+      control: { type: 'boolean' },
+    },
+    dragMomentumSpeed: {
+      control: { type: 'range', min: 1, max: 50, steps: 1 },
+    },
+    dragMomentumDecay: {
+      control: { type: 'range', min: 0.95, max: 0.99, step: 0.01 },
     },
     showIndexes: {
       control: { type: 'boolean' },
@@ -154,6 +179,12 @@ export const DefaultCarousel = Template.bind({})
 DefaultCarousel.args = {
   randomTileSizes: false,
   showIndexes: true,
+  scrollable: true,
+  draggable: true,
+  hasDragMomentum: true,
+  dragMomentumSpeed: 25,
+  dragMomentumDecay: 0.98,
+  showArrows: true,
   indexesPerRow: 0,
   tileCount: 25,
   slideWidth: 150,
@@ -162,13 +193,18 @@ DefaultCarousel.args = {
   minDisplayCount: 0,
   startIndex: 0,
   gridGap: 15,
-  showArrows: true,
 }
 
 export const CustomArrows = Template.bind({})
 CustomArrows.args = {
   randomTileSizes: false,
   showIndexes: true,
+  scrollable: true,
+  draggable: true,
+  hasDragMomentum: true,
+  dragMomentumSpeed: 25,
+  dragMomentumDecay: 0.98,
+  showArrows: true,
   indexesPerRow: 0,
   tileCount: 25,
   slideWidth: 150,
@@ -177,7 +213,6 @@ CustomArrows.args = {
   minDisplayCount: 0,
   startIndex: 0,
   gridGap: 15,
-  showArrows: true,
   CustomArrow: ({ isLeft, isHidden, scrollBy }) => {
     const onClick = useCallback(
       (scrollCount) => (e) => {

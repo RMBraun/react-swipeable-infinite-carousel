@@ -1,6 +1,11 @@
 import React from 'react'
 export interface CarouselProps {
   startIndex?: number
+  isScrollable?: boolean
+  isDraggable?: boolean
+  hasDragMomentum?: boolean
+  dragMomentumSpeed?: number
+  dragMomentumDecay?: number
   minDisplayCount?: number
   displayCount?: number
   gridGap?: number
