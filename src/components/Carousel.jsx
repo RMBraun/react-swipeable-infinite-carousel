@@ -76,7 +76,16 @@ const Arrow = ({ isLeft, isRight, isHidden, scrollBy, arrowProps, arrowIconProps
 }
 
 // eslint-disable-next-line no-unused-vars
-const Indexes = ({ startIndex, endIndex, indexesPerRow, slideAnchors, scrollBy, indexContainerProps, indexProps }) => {
+const Indexes = ({
+  activeIndexes,
+  startIndex,
+  endIndex,
+  indexesPerRow,
+  slideAnchors,
+  scrollBy,
+  indexContainerProps,
+  indexProps,
+}) => {
   const containerRef = useRef()
   const gap = 5
   const borderWidth = 2
@@ -97,7 +106,7 @@ const Indexes = ({ startIndex, endIndex, indexesPerRow, slideAnchors, scrollBy, 
 
       scrollBy(scrollCount)
     },
-    [indexProps?.onClick, scrollBy, startIndex],
+    [scrollBy],
   )
 
   return (
@@ -113,7 +122,7 @@ const Indexes = ({ startIndex, endIndex, indexesPerRow, slideAnchors, scrollBy, 
           {...indexProps}
           className={iconClassName}
           style={{
-            backgroundColor: i >= startIndex && i <= endIndex ? 'black' : 'transparent',
+            backgroundColor: activeIndexes.includes(i) ? 'black' : 'transparent',
             width,
             borderWidth: `${borderWidth}px`,
             ...indexProps?.style,
@@ -126,6 +135,7 @@ const Indexes = ({ startIndex, endIndex, indexesPerRow, slideAnchors, scrollBy, 
 }
 
 export const Carousel = ({
+  isInfinite = false,
   startIndex = 0,
   isScrollable = true,
   isDraggable = true,
@@ -153,7 +163,13 @@ export const Carousel = ({
   const momentumTimeoutId = useRef()
   const currentDragSpeed = useRef(0)
   const resizeObserverRef = useRef()
-  const slides = React.Children.toArray(children) || []
+  const [clonesLength, setClonesLength] = useState(isInfinite ? 5 : 0)
+  const rawSlides = React.Children.toArray(children) || []
+  const slides = useMemo(
+    () =>
+      isInfinite ? [...rawSlides.slice(-clonesLength), ...rawSlides, ...rawSlides.slice(0, clonesLength)] : rawSlides,
+    [rawSlides.length, isInfinite],
+  )
   const slideCount = slides.length
   const slidesRefs = useMemo(
     () =>
@@ -163,6 +179,10 @@ export const Carousel = ({
     [slideCount],
   )
   const [slideAnchors, setSlideAnchors] = useState([])
+  const coreSlideAnchors = useMemo(
+    () => (isInfinite ? slideAnchors.slice(clonesLength, -clonesLength) : slideAnchors),
+    [slideAnchors.length, isInfinite],
+  )
   const containerRef = useRef(null)
   const slideContainerRef = useRef(null)
   const getTranslateOffset = useCallback(
@@ -173,15 +193,17 @@ export const Carousel = ({
 
     [slideAnchors],
   )
-  const [index, setIndexState] = useState({ left: startIndex, right: startIndex })
+  const [index, setIndexState] = useState({ left: startIndex + clonesLength, right: startIndex + clonesLength })
+  const activeIndexes = useMemo(() => {
+    if (index?.left != null && index?.right != null) {
+      return Array(index.right - index.left + 1)
+        .fill(index.left)
+        .map((_, i) => (index.left + i - clonesLength) % rawSlides.length)
+    } else {
+      return []
+    }
+  }, [index?.left, index?.right, clonesLength])
   const indexRef = useRef(index)
-  const setIndex = useCallback(
-    (newIndex) => {
-      indexRef.current = newIndex
-      setIndexState(newIndex)
-    },
-    [setIndexState],
-  )
   const [maxIndex, setMaxIndex] = useState(slideCount)
   const [isDragging, setIsDragging] = useState(false)
   const [isScrolling, setIsScrolling] = useState(false)
@@ -191,17 +213,21 @@ export const Carousel = ({
   const touchStartRef = useRef(0)
   const touchEndRef = useRef(0)
   const scrollDebounceId = useRef()
+
   const maxScrollX = 0
+
   const minScrollX = useMemo(() => {
     const start = slideAnchors?.[maxIndex]?.start
 
     return start != null ? -1 * start : 0
   }, [slideAnchors, slideCount, maxIndex])
-  const showLeftArrow = index.left !== 0
+
+  const showLeftArrow = isInfinite || index.left !== 0
   const showRightArrow =
-    translateOffset.current != null && containerRef.current != null && slideAnchors?.[slideCount - 1] != null
+    isInfinite ||
+    (translateOffset.current != null && containerRef.current != null && slideAnchors?.[slideCount - 1] != null
       ? -1 * translateOffset.current + containerRef.current.clientWidth < slideAnchors?.[slideCount - 1].end
-      : true
+      : true)
 
   const getBoundIndex = useCallback(
     (newIndex, newMaxIndex = maxIndex) => Math.max(0, Math.min(newMaxIndex, newIndex)),
@@ -238,15 +264,37 @@ export const Carousel = ({
     [slideCount, slideAnchors, getBoundIndex],
   )
 
-  const setTranslateOffset = useCallback((offset) => {
-    translateOffset.current = offset
-    requestAnimationFrame(() => {
-      if (slideContainerRef.current) {
-        slideContainerRef.current.style.transform = `translate(${offset}px)`
-      }
-    })
-  }, [])
+  const setTranslateOffset = useCallback(
+    (offset, index) => {
+      requestAnimationFrame(() => {
+        if (slideContainerRef.current) {
+          let boundOffset = offset
 
+          if ((isScrolling || isDragging) && isInfinite && slideAnchors.length) {
+            const rightAnchor = slideAnchors[slideAnchors.length - 2 - clonesLength].end
+            const leftAnchor = slideAnchors[clonesLength - 1].start
+
+            if (offset + rightAnchor < 0) {
+              boundOffset = offset + rightAnchor - leftAnchor
+            } else if (offset + leftAnchor > 0) {
+              boundOffset = offset + leftAnchor - rightAnchor
+            }
+          }
+
+          const newIndex = index == null ? getScrollIndex(boundOffset) : index
+
+          translateOffset.current = boundOffset
+          slideContainerRef.current.style.transform = `translate(${boundOffset}px)`
+
+          indexRef.current = newIndex
+          setIndexState(newIndex)
+        }
+      })
+    },
+    [isScrolling, isDragging, slideAnchors, clonesLength, getScrollIndex, setIndexState, getScrollIndex],
+  )
+
+  //TODO fix the clones length.. should auto-calculate it
   const onResize = () => {
     const newSlideAnchors = calculateAnchors(slidesRefs)
     if (newSlideAnchors?.length) {
@@ -260,10 +308,10 @@ export const Carousel = ({
       const newTranslateOffset = getTranslateOffset(newLeftIndex, newSlideAnchors)
       const newScrollIndex = getScrollIndex(newTranslateOffset, newSlideAnchors)
 
-      setIndex(newScrollIndex)
+      setClonesLength(isInfinite ? 5 : 0)
       setSlideAnchors(newSlideAnchors)
       setMaxIndex(newMaxIndex)
-      setTranslateOffset(newTranslateOffset)
+      setTranslateOffset(newTranslateOffset, newScrollIndex)
     }
   }
 
@@ -276,7 +324,7 @@ export const Carousel = ({
     slidesRefs.forEach(({ current }) => resizeObserverRef.current.observe(current))
 
     onResize()
-  }, [slideCount, minDisplayCount, displayCount, gridGap])
+  }, [slideCount, minDisplayCount, displayCount, gridGap, isInfinite])
 
   useEffect(() => {
     window.addEventListener('resize', onResize)
@@ -290,16 +338,14 @@ export const Carousel = ({
     }
   }, [])
 
+  //TODO: fix infinite scroll with arrows
   const onArrowClick = useCallback(
     (indexOffset) => {
       const newBoundIndex = getBoundIndex(index.left + indexOffset)
       const newTranslateOffset = getTranslateOffset(newBoundIndex)
-      const newScrollIndex = getScrollIndex(newTranslateOffset)
-
-      setIndex(newScrollIndex)
       setTranslateOffset(newTranslateOffset)
     },
-    [index, slideCount, getTranslateOffset, setIndex, setTranslateOffset, getBoundIndex],
+    [index, slideCount, getTranslateOffset, setTranslateOffset, getBoundIndex],
   )
 
   const onTouchStart = useCallback(
@@ -337,14 +383,10 @@ export const Carousel = ({
       currentDragSpeed.current = delta
 
       if (delta !== 0) {
-        const newTranslateOffset = translateOffset.current - delta
-        const newScrollIndex = getScrollIndex(newTranslateOffset)
-
-        setIndex(newScrollIndex)
-        setTranslateOffset(newTranslateOffset)
+        setTranslateOffset(translateOffset.current - delta)
       }
     },
-    [isDraggable, slideAnchors, isScrolling, isDragging, index, setTranslateOffset],
+    [isDraggable, isScrolling, isDragging, setTranslateOffset],
   )
 
   const onTouchEnd = useCallback(
@@ -368,11 +410,7 @@ export const Carousel = ({
               isMomentum.current = false
               setIsDragging(false)
             } else {
-              const newScrollIndex = getScrollIndex(newTranslateOffset)
-
-              setIndex(newScrollIndex)
               setTranslateOffset(newTranslateOffset)
-
               momentumFunc(speed * dragMomentumDecay)
             }
           })
@@ -397,32 +435,9 @@ export const Carousel = ({
       isDraggable,
       isScrolling,
       setIsDragging,
+      setTranslateOffset,
     ],
   )
-
-  useEffect(() => {
-    if (!isDragging || !isDraggable) {
-      if (momentumTimeoutId.current) {
-        cancelAnimationFrame(momentumTimeoutId.current)
-      }
-
-      const currentOffset = -1 * translateOffset.current
-
-      const newIndex = slideAnchors.reduce((acc, { start, width }, i) => {
-        return currentOffset >= start ? (currentOffset >= start + width / 2 ? i + 1 : i) : acc
-      }, 0)
-
-      const newBoundIndex = getBoundIndex(newIndex)
-      const newTranslateOffset = getTranslateOffset(newBoundIndex)
-      const newScrollIndex = getScrollIndex(newTranslateOffset)
-
-      setIndex(newScrollIndex)
-      setTranslateOffset(newTranslateOffset)
-
-      touchStartRef.current = 0
-      touchEndRef.current = 0
-    }
-  }, [isDragging, isDraggable])
 
   const onScroll = useCallback(
     (e) => {
@@ -448,32 +463,18 @@ export const Carousel = ({
       const newTranslateOffset =
         translateOffset.current - scrollDirection * Math.min(scrollSpeed, Math.abs(scrollDelta))
 
-      const newBoundIndex = getScrollIndex(newTranslateOffset)
-
-      if (index.left !== newBoundIndex.left || index.right !== newBoundIndex.right) {
-        setIndex(newBoundIndex)
-      }
-
       const debounceFunc = () => {
-        if (isScrolling) {
-          setIsScrolling(false)
-          const finalTranslateOffset = getTranslateOffset(newBoundIndex.left)
-          const finalBoundIndex = getScrollIndex(finalTranslateOffset)
-          setIndex(finalBoundIndex)
-          setTranslateOffset(finalTranslateOffset)
-        }
+        setIsScrolling(false)
       }
 
       if (scrollDebounceId.current) {
         clearTimeout(scrollDebounceId.current)
       }
 
-      if (newTranslateOffset >= maxScrollX) {
+      if (!isInfinite && newTranslateOffset >= maxScrollX) {
         setTranslateOffset(maxScrollX)
-        debounceFunc()
-      } else if (newTranslateOffset <= minScrollX) {
+      } else if (!isInfinite && newTranslateOffset <= minScrollX) {
         setTranslateOffset(minScrollX)
-        debounceFunc()
       } else {
         setTranslateOffset(newTranslateOffset)
 
@@ -481,19 +482,35 @@ export const Carousel = ({
       }
     },
     [
+      isInfinite,
       isScrollable,
-      index,
-      slideAnchors,
       scrollSpeed,
       isScrolling,
       minScrollX,
       translateOffset,
       isDragging,
       setIsScrolling,
-      setIndex,
       setTranslateOffset,
     ],
   )
+
+  useEffect(() => {
+    if (isDraggable && !isDragging && isScrollable && !isScrolling) {
+      if (momentumTimeoutId.current) {
+        cancelAnimationFrame(momentumTimeoutId.current)
+      }
+
+      if (scrollDebounceId.current) {
+        clearTimeout(scrollDebounceId.current)
+      }
+
+      const newTranslateOffset = getTranslateOffset(index.left)
+      setTranslateOffset(newTranslateOffset)
+
+      touchStartRef.current = 0
+      touchEndRef.current = 0
+    }
+  }, [isDragging, isDraggable, isScrolling, isScrollable])
 
   const slideContainerCss = useMemo(
     () =>
@@ -565,10 +582,11 @@ export const Carousel = ({
       </div>
       {showIndexes && (
         <RenderIndexes
-          startIndex={index.left}
-          endIndex={index.right}
-          indexesPerRow={indexesPerRow || slideCount}
-          slideAnchors={slideAnchors}
+          startIndex={index.left - clonesLength}
+          endIndex={index.right - clonesLength}
+          activeIndexes={activeIndexes}
+          indexesPerRow={indexesPerRow || rawSlides.length}
+          slideAnchors={coreSlideAnchors}
           scrollBy={onArrowClick}
           indexContainerProps={indexContainerProps}
           indexProps={indexProps}

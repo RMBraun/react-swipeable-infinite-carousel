@@ -41,6 +41,7 @@ const getRandomWidth = () => Math.max(Math.min((Math.random() * 7 + 1) * 40 + 10
 const tileCache = []
 
 const Template = ({
+  isInfinite,
   randomTileSizes,
   showIndexes,
   indexesPerRow,
@@ -87,6 +88,7 @@ const Template = ({
     <div style={SectionContainerCss}>
       <div style={CarouselContainerCss}>
         <CarouselEle
+          isInfinite={isInfinite}
           startIndex={startIndex}
           gridGap={gridGap}
           displayCount={displayCount}
@@ -123,8 +125,11 @@ export default {
   component: Template,
   title: 'Carousel',
   argTypes: {
-    randomTileSizes: {
+    isInfinite: {
       control: { type: 'boolean' },
+    },
+    randomTileSizes: {
+      control: false,
     },
     scrollable: {
       control: { type: 'boolean' },
@@ -175,8 +180,8 @@ export default {
   },
 }
 
-export const DefaultCarousel = Template.bind({})
-DefaultCarousel.args = {
+const carouselStoryArgs = {
+  isInfinite: false,
   randomTileSizes: false,
   showIndexes: true,
   scrollable: true,
@@ -193,6 +198,21 @@ DefaultCarousel.args = {
   minDisplayCount: 0,
   startIndex: 0,
   gridGap: 15,
+}
+
+export const DefaultCarousel = Template.bind({})
+DefaultCarousel.args = carouselStoryArgs
+
+export const VaryingSlideWidths = Template.bind({})
+VaryingSlideWidths.args = {
+  ...carouselStoryArgs,
+  randomTileSizes: true,
+}
+
+export const InfiniteCarousel = Template.bind({})
+InfiniteCarousel.args = {
+  ...carouselStoryArgs,
+  isInfinite: true,
 }
 
 export const CustomArrows = Template.bind({})

@@ -3,11 +3,6 @@
 Simple swipeable, draggable, and scrollable React carousel component.
 [A demo of the carousel can be seen here](https://rmbraun.github.io/react-swipeable-infinite-carousel/)
 
-## Currently in progress:
-
-- Infinite carousel
-- scroll momentum for dragging
-
 ## How to install:
 
 ```
@@ -46,6 +41,7 @@ const CustomArrow = ({
 }
 
 const CustomIndexes = ({ 
+  activeIndexes, //Array of numbers specifying which indexes are active
   startIndex, //index of the left-most displayed item
   endIndex,  //index of the right-most displayed item
   slideAnchors, //information about each slide (start and end scroll offsets and slide width)
@@ -65,7 +61,7 @@ const CustomIndexes = ({
       {slideAnchors?.map((_, i) => (
         <button
           key={i}
-          className={`customIndex ${i >= startIndex && i <= endIndex ? 'isActive' : ''}`}
+          className={`customIndex ${activeIndexes.includes(i) ? 'isActive' : ''}`}
           onClick={onClick(i - startIndex)}
         />
       ))}
@@ -75,7 +71,13 @@ const CustomIndexes = ({
 
 //NOTE: all props are optional. These are all set as examples
 <Carousel
+  isInfinite={true} //whether the carousel is infinite scrolling or not
   startIndex={4} //which index to start on
+  isScrollable={true} //whether scrolling using a mouse or trackpad is allowed
+  isDraggable={true} //whether dragging by mouse or touch is allowed
+  hasDragMomentum={true} //whether scroll momentum is added when dragging
+  dragMomentumSpeed={25} //maximum momentum scroll speed in pixels
+  dragMomentumDecay={0.98} //scroll momentum decay rate
   gridGap={15} //gap between each tile in px
   displayCount={4} //maximum number of tiles to display
   minDisplayCount={2} //minimum number of tiles to display
@@ -103,6 +105,7 @@ const CustomIndexes = ({
 
 |  	| **Type** 	| **Default Value** 	| **Description** 	|
 |---	|---	|---	|---	|
+| **isInfinite** 	| boolean 	| false 	| Toggles whether the infinite scrolling is enabled 	|
 | **startIndex** 	| int 	| 0 	| Which index to start on 	|
 | **isScrollable** 	| boolean 	| true 	| Is the carousel scrollable (mouse wheel + trackpad) 	|
 | **isDraggable** 	| boolean 	| true 	| Is the carousel draggable (mouse drag + touch screens) 	|

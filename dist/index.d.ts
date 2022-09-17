@@ -1,5 +1,6 @@
 import React from 'react'
 export interface CarouselProps {
+  isInfinite?: number
   startIndex?: number
   isScrollable?: boolean
   isDraggable?: boolean
@@ -32,6 +33,7 @@ export interface RenderArrowsProps {
 }
 
 export interface RenderIndexesProps {
+  activeIndexes: Array<number>
   startIndex: number
   endIndex: number
   indexesPerRow: number
