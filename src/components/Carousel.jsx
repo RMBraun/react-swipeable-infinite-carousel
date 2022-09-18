@@ -167,9 +167,9 @@ export const Carousel = ({
 
   const resizeObserverRef = useRef()
 
-  const [clonesLength, setClonesLength] = useState(isInfinite ? 5 : 0)
-
   const rawSlides = React.Children.toArray(children) || []
+
+  const [clonesLength, setClonesLength] = useState(0)
 
   const slides = useMemo(
     () =>
@@ -337,21 +337,31 @@ export const Carousel = ({
     [isScrolling, isDragging, slideAnchors, clonesLength, getScrollIndex, setIndexState, getScrollIndex],
   )
 
-  //TODO fix the clones length.. should auto-calculate it
   const onResize = () => {
     const newSlideAnchors = calculateAnchors(slidesRefs)
     if (newSlideAnchors?.length) {
       const containerWidth = slideContainerRef.current.clientWidth
       const lastEnd = newSlideAnchors[newSlideAnchors.length - 1].end
+
+      const newClonesLength = isInfinite
+        ? Math.max(
+            //min left clones
+            newSlideAnchors.findIndex(({ end }) => end > containerWidth),
+            //min right clones
+            newSlideAnchors.length - newSlideAnchors.findIndex(({ start }) => start + containerWidth > lastEnd),
+            1,
+          )
+        : 0
+
       const newMaxIndex = getBoundIndex(
         newSlideAnchors.findIndex(({ start }) => start + containerWidth >= lastEnd),
         newSlideAnchors.length - 1,
       )
       const newLeftIndex = getBoundIndex(indexRef.current.left, newMaxIndex)
-      const newTranslateOffset = getTranslateOffset(newLeftIndex, newSlideAnchors)
+      const newTranslateOffset = getTranslateOffset(newLeftIndex + newClonesLength, newSlideAnchors)
       const newScrollIndex = getScrollIndex(newTranslateOffset, newSlideAnchors)
 
-      setClonesLength(isInfinite ? 5 : 0)
+      setClonesLength(newClonesLength)
       setSlideAnchors(newSlideAnchors)
       setMaxIndex(newMaxIndex)
       setTranslateOffset({ offset: newTranslateOffset, index: newScrollIndex })
