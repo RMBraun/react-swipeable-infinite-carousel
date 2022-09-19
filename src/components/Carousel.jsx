@@ -169,7 +169,7 @@ export const Carousel = ({
 
   const rawSlides = React.Children.toArray(children) || []
 
-  const [clonesLength, setClonesLength] = useState(isInfinite ? Math.max(rawSlides.length, 1) : 0)
+  const [clonesLength, setClonesLength] = useState(isInfinite ? rawSlides.length : 0)
 
   const slides = useMemo(
     () =>
@@ -296,11 +296,11 @@ export const Carousel = ({
 
   const setTranslateOffset = useCallback(
     ({ offset, index, newSlideAnchors = slideAnchors, newClonesLength = clonesLength }) => {
-      if (!slideContainerRef.current) {
-        return
-      }
-
       requestAnimationFrame(() => {
+        if (!slideContainerRef.current) {
+          return
+        }
+
         let boundOffset = offset
 
         if (isInfinite && newClonesLength && newSlideAnchors.length) {
@@ -347,111 +347,94 @@ export const Carousel = ({
     ],
   )
 
+  const calcClonesLength = (newSlideAnchors) => {
+    if (!isInfinite) {
+      return 0
+    }
+
+    const containerWidth = slideContainerRef.current.clientWidth
+
+    const coreSlideAnchors = isInfinite
+      ? newSlideAnchors.slice(clonesLength, newSlideAnchors.length - clonesLength)
+      : newSlideAnchors
+
+    const leftCount = coreSlideAnchors.reduce(
+      (acc, { width }, i) => {
+        acc.width = acc.width + width
+
+        if (acc.index == null && acc.width > containerWidth) {
+          acc.index = i + 1
+        }
+
+        return acc
+      },
+      {
+        width: 0,
+        index: null,
+      },
+    ).index
+
+    const rightCount = coreSlideAnchors.reduceRight(
+      (acc, { width }, i) => {
+        acc.width = acc.width + width
+
+        if (acc.index == null && acc.width > containerWidth) {
+          acc.index = coreSlideAnchors.length - i
+        }
+
+        return acc
+      },
+      {
+        width: 0,
+        index: null,
+      },
+    ).index
+
+    return Math.max(leftCount, rightCount, 1)
+  }
+
   const onResize = () => {
     const newSlideAnchors = calculateAnchors(slidesRefs, gridGap)
     if (newSlideAnchors?.length) {
       const containerWidth = slideContainerRef.current.clientWidth
+
+      const newClonesLength = calcClonesLength(newSlideAnchors)
+
       const lastEnd = newSlideAnchors[newSlideAnchors.length - 1].end
 
       const newMaxIndex = getBoundIndex(
         newSlideAnchors.findIndex(({ start }) => start + containerWidth >= lastEnd),
         newSlideAnchors.length - 1,
       )
-      const newLeftIndex = getBoundIndex(indexRef.current.left, newMaxIndex)
+      const newLeftIndex = getBoundIndex(indexRef.current.left + newClonesLength, newMaxIndex)
       const newTranslateOffset = getTranslateOffset(newLeftIndex, newSlideAnchors)
       const newScrollIndex = getScrollIndex(newTranslateOffset, newSlideAnchors)
 
+      setClonesLength(newClonesLength)
+      setIndexState(newScrollIndex)
       setSlideAnchors(newSlideAnchors)
       setMaxIndex(newMaxIndex)
       setTranslateOffset({ offset: newTranslateOffset, index: newScrollIndex })
     }
   }
 
-  const calcClones = () => {
-    const newSlideAnchors = calculateAnchors(slidesRefs, gridGap)
-    if (newSlideAnchors?.length) {
-      const containerWidth = slideContainerRef.current.clientWidth
-
-      const coreSlideAnchors = isInfinite
-        ? newSlideAnchors.slice(clonesLength, newSlideAnchors.length - clonesLength)
-        : newSlideAnchors
-
-      const leftCount = coreSlideAnchors.reduce(
-        (acc, { width }, i) => {
-          acc.width = acc.width + width
-
-          if (acc.index == null) {
-            if (acc.width > containerWidth) {
-              acc.index = i + 1
-            }
-          }
-
-          return acc
-        },
-        {
-          width: 0,
-          index: null,
-        },
-      ).index
-
-      const rightCount = coreSlideAnchors.reduceRight(
-        (acc, { width }, i) => {
-          acc.width = acc.width + width
-
-          if (acc.index == null) {
-            if (acc.width > containerWidth) {
-              acc.index = coreSlideAnchors.length - i
-            }
-          }
-
-          return acc
-        },
-        {
-          width: 0,
-          index: null,
-        },
-      ).index
-
-      const newClonesLength = isInfinite ? Math.max(leftCount, rightCount, 1) : 0
-
-      console.log(newClonesLength)
-
-      setClonesLength(newClonesLength)
-    }
-  }
-
   useLayoutEffect(() => {
-    console.log('one')
-  }, [])
-
-  useLayoutEffect(() => {
-    console.log('two')
     if (resizeObserverRef.current) {
       resizeObserverRef.current.disconnect()
     }
 
     resizeObserverRef.current = new ResizeObserver(onResize)
+    resizeObserverRef.current.observe(containerRef.current)
     slidesRefs.forEach(({ current }) => resizeObserverRef.current.observe(current))
 
     onResize()
   }, [slideCount, clonesLength, minDisplayCount, displayCount, gridGap, isInfinite])
 
   useEffect(() => {
-    console.log('three')
     setIsScrolling(false)
 
     if (isInfinite) {
-      // calcClones()
-    }
-
-    window.addEventListener('resize', onResize)
-
-    return () => {
-      if (resizeObserverRef.current) {
-        resizeObserverRef.current.disconnect()
-      }
-
-      window.removeEventListener('resize', onResize)
+      onResize()
     }
   }, [])
 
@@ -580,6 +563,7 @@ export const Carousel = ({
             if (Math.abs(speed) <= 1 || newTranslateOffset >= maxScrollX || newTranslateOffset <= minScrollX) {
               isMomentum.current = false
               setIsDragging(false)
+              currentDragSpeed.current = 0
             } else {
               setTranslateOffset({ offset: newTranslateOffset })
               momentumFunc(speed * dragMomentumDecay)
@@ -592,7 +576,6 @@ export const Carousel = ({
             ? Math.max(currentDragSpeed.current, -dragMomentumSpeed)
             : Math.min(currentDragSpeed.current, dragMomentumSpeed),
         )
-        currentDragSpeed.current = 0
       } else {
         setIsDragging(false)
       }

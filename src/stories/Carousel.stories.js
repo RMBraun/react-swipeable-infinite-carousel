@@ -240,6 +240,7 @@ MobileSingleItem.args = {
   isInfinite: true,
   tileCount: 5,
   displayCount: 1,
+  minDisplayCount: 1,
   width: '300',
   height: '500',
   hasDragMomentum: false,
