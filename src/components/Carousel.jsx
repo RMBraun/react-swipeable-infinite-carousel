@@ -4,11 +4,11 @@ import styles from './Carousel.module.css'
 
 const getClientXOffset = (e) => e?.touches?.[0]?.clientX || e?.clientX || 0
 
-const calculateAnchors = (slideRefs = []) =>
+const calculateAnchors = (slideRefs = [], gridGap) =>
   slideRefs.reduce((acc, ref, i) => {
     if (ref?.current) {
-      const width = ref.current.clientWidth
-      const start = i === 0 ? 0 : acc[i - 1].end
+      const width = ref.current.clientWidth - gridGap
+      const start = i === 0 ? 0 : acc[i - 1].end + gridGap
       const end = start + width
       acc.push({ start, end, width })
     }
@@ -29,8 +29,8 @@ const ContainerCss = ({ displayCount, minDisplayCount, slideAnchors }) => {
   const width = calcMinWidth(slideAnchors, displayCount)
 
   return {
-    minWidth: minWidth ? `${minWidth}px` : 'auto',
-    width: width ? `${width}px` : '100%',
+    minWidth: minWidth > 0 ? `${minWidth}px` : 'auto',
+    width: width > 0 ? `${width}px` : '100%',
   }
 }
 
@@ -169,7 +169,7 @@ export const Carousel = ({
 
   const rawSlides = React.Children.toArray(children) || []
 
-  const [clonesLength, setClonesLength] = useState(0)
+  const [clonesLength, setClonesLength] = useState(isInfinite ? Math.max(rawSlides.length, 1) : 0)
 
   const slides = useMemo(
     () =>
@@ -295,7 +295,7 @@ export const Carousel = ({
   )
 
   const setTranslateOffset = useCallback(
-    ({ offset, index }) => {
+    ({ offset, index, newSlideAnchors = slideAnchors, newClonesLength = clonesLength }) => {
       if (!slideContainerRef.current) {
         return
       }
@@ -303,9 +303,9 @@ export const Carousel = ({
       requestAnimationFrame(() => {
         let boundOffset = offset
 
-        if (isInfinite && slideAnchors.length) {
-          const rightAnchor = slideAnchors[slideAnchors.length - 2 - clonesLength].end
-          const leftAnchor = slideAnchors[clonesLength - 1].start
+        if (isInfinite && newClonesLength && newSlideAnchors.length) {
+          const rightAnchor = newSlideAnchors[newSlideAnchors.length - newClonesLength - 1].end + gridGap
+          const leftAnchor = newSlideAnchors[newClonesLength].start
 
           if (offset + rightAnchor < 0) {
             boundOffset = offset + rightAnchor - leftAnchor
@@ -334,41 +334,98 @@ export const Carousel = ({
         setIndexState(newIndex)
       })
     },
-    [isScrolling, isDragging, slideAnchors, clonesLength, getScrollIndex, setIndexState, getScrollIndex],
+    [
+      gridGap,
+      isScrolling,
+      isDragging,
+      slideAnchors,
+      slideAnchors?.length,
+      clonesLength,
+      getScrollIndex,
+      setIndexState,
+      getScrollIndex,
+    ],
   )
 
   const onResize = () => {
-    const newSlideAnchors = calculateAnchors(slidesRefs)
+    const newSlideAnchors = calculateAnchors(slidesRefs, gridGap)
     if (newSlideAnchors?.length) {
       const containerWidth = slideContainerRef.current.clientWidth
       const lastEnd = newSlideAnchors[newSlideAnchors.length - 1].end
-
-      const newClonesLength = isInfinite
-        ? Math.max(
-            //min left clones
-            newSlideAnchors.findIndex(({ end }) => end > containerWidth),
-            //min right clones
-            newSlideAnchors.length - newSlideAnchors.findIndex(({ start }) => start + containerWidth > lastEnd),
-            1,
-          )
-        : 0
 
       const newMaxIndex = getBoundIndex(
         newSlideAnchors.findIndex(({ start }) => start + containerWidth >= lastEnd),
         newSlideAnchors.length - 1,
       )
       const newLeftIndex = getBoundIndex(indexRef.current.left, newMaxIndex)
-      const newTranslateOffset = getTranslateOffset(newLeftIndex + newClonesLength, newSlideAnchors)
+      const newTranslateOffset = getTranslateOffset(newLeftIndex, newSlideAnchors)
       const newScrollIndex = getScrollIndex(newTranslateOffset, newSlideAnchors)
 
-      setClonesLength(newClonesLength)
       setSlideAnchors(newSlideAnchors)
       setMaxIndex(newMaxIndex)
       setTranslateOffset({ offset: newTranslateOffset, index: newScrollIndex })
     }
   }
 
+  const calcClones = () => {
+    const newSlideAnchors = calculateAnchors(slidesRefs, gridGap)
+    if (newSlideAnchors?.length) {
+      const containerWidth = slideContainerRef.current.clientWidth
+
+      const coreSlideAnchors = isInfinite
+        ? newSlideAnchors.slice(clonesLength, newSlideAnchors.length - clonesLength)
+        : newSlideAnchors
+
+      const leftCount = coreSlideAnchors.reduce(
+        (acc, { width }, i) => {
+          acc.width = acc.width + width
+
+          if (acc.index == null) {
+            if (acc.width > containerWidth) {
+              acc.index = i + 1
+            }
+          }
+
+          return acc
+        },
+        {
+          width: 0,
+          index: null,
+        },
+      ).index
+
+      const rightCount = coreSlideAnchors.reduceRight(
+        (acc, { width }, i) => {
+          acc.width = acc.width + width
+
+          if (acc.index == null) {
+            if (acc.width > containerWidth) {
+              acc.index = coreSlideAnchors.length - i
+            }
+          }
+
+          return acc
+        },
+        {
+          width: 0,
+          index: null,
+        },
+      ).index
+
+      const newClonesLength = isInfinite ? Math.max(leftCount, rightCount, 1) : 0
+
+      console.log(newClonesLength)
+
+      setClonesLength(newClonesLength)
+    }
+  }
+
   useLayoutEffect(() => {
+    console.log('one')
+  }, [])
+
+  useLayoutEffect(() => {
+    console.log('two')
     if (resizeObserverRef.current) {
       resizeObserverRef.current.disconnect()
     }
@@ -377,10 +434,16 @@ export const Carousel = ({
     slidesRefs.forEach(({ current }) => resizeObserverRef.current.observe(current))
 
     onResize()
-  }, [slideCount, minDisplayCount, displayCount, gridGap, isInfinite])
+  }, [slideCount, clonesLength, minDisplayCount, displayCount, gridGap, isInfinite])
 
   useEffect(() => {
+    console.log('three')
     setIsScrolling(false)
+
+    if (isInfinite) {
+      // calcClones()
+    }
+
     window.addEventListener('resize', onResize)
 
     return () => {
@@ -604,7 +667,7 @@ export const Carousel = ({
   )
 
   useEffect(() => {
-    if (!areArrowsLocked.current && isDraggable && !isDragging && isScrollable && !isScrolling) {
+    if (!areArrowsLocked.current && !(isDraggable && isDragging) && !(isScrollable && isScrolling)) {
       if (momentumDebounceId.current) {
         cancelAnimationFrame(momentumDebounceId.current)
       }
@@ -621,15 +684,21 @@ export const Carousel = ({
     }
   }, [isDragging, isDraggable, isScrolling, isScrollable])
 
+  const containerCss = useMemo(
+    () =>
+      ContainerCss({
+        minDisplayCount,
+        displayCount,
+        slideAnchors,
+      }),
+    [slideAnchors, slideAnchors?.length, minDisplayCount, displayCount],
+  )
+
   return (
     <div
       className={styles.container}
       style={{
-        ...ContainerCss({
-          minDisplayCount,
-          displayCount,
-          slideAnchors,
-        }),
+        ...containerCss,
         ...style,
       }}
       ref={containerRef}
@@ -659,7 +728,7 @@ export const Carousel = ({
         >
           {slides.map((slide, i) => (
             <div
-              style={{ paddingRight: `${i === slides.length ? 0 : gridGap}px`, ...slideStyle }}
+              style={{ paddingRight: `${!isInfinite && i === slides.length - 1 ? 0 : gridGap}px`, ...slideStyle }}
               ref={slidesRefs[i]}
               key={i}
             >

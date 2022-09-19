@@ -1,5 +1,4 @@
-import { range } from 'lodash'
-import React, { useCallback, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { Carousel as CarouselEle } from '../components/Carousel'
 import './Carousel.css'
 
@@ -50,8 +49,6 @@ const Template = ({
   displayCount,
   minDisplayCount,
   showArrows,
-  slideWidth,
-  slideHeight,
   gridGap,
   scrollable,
   draggable,
@@ -59,6 +56,8 @@ const Template = ({
   dragMomentumSpeed,
   dragMomentumDecay,
   CustomArrow,
+  width,
+  height,
 }) => {
   const randomColors = useMemo(() => {
     if (!tileCount || tileCount <= 0) {
@@ -103,13 +102,13 @@ const Template = ({
           dragMomentumSpeed={dragMomentumSpeed}
           dragMomentumDecay={dragMomentumDecay}
         >
-          {randomColors.map(({ color, width }, i) => (
+          {randomColors.map((slide, i) => (
             <div
               key={i}
               style={TileCss({
-                color,
-                width: `${randomTileSizes ? width : slideWidth}px`,
-                height: `${slideHeight}px`,
+                color: slide.color,
+                width: `${randomTileSizes ? slide.width : width}px`,
+                height: `${height}px`,
               })}
             >
               {i}
@@ -126,10 +125,28 @@ export default {
   title: 'Carousel',
   argTypes: {
     isInfinite: {
-      control: { type: 'boolean' },
+      control: false,
+      table: {
+        disable: true,
+      },
     },
     randomTileSizes: {
       control: false,
+      table: {
+        disable: true,
+      },
+    },
+    width: {
+      control: false,
+      table: {
+        disable: true,
+      },
+    },
+    height: {
+      control: false,
+      table: {
+        disable: true,
+      },
     },
     scrollable: {
       control: { type: 'boolean' },
@@ -155,13 +172,6 @@ export default {
     tileCount: {
       control: { type: 'range', min: 1, max: 50, step: 1 },
     },
-    slideWidth: {
-      control: { type: 'range', min: 1, max: 500, step: 1 },
-      if: { arg: 'randomTileSizes', truthy: false },
-    },
-    slideHeight: {
-      control: { type: 'range', min: 1, max: 500, step: 1 },
-    },
     displayCount: {
       control: { type: 'range', min: 0, max: 50, step: 1 },
     },
@@ -181,6 +191,8 @@ export default {
 }
 
 const carouselStoryArgs = {
+  width: '150',
+  height: '250',
   isInfinite: false,
   randomTileSizes: false,
   showIndexes: true,
@@ -192,65 +204,45 @@ const carouselStoryArgs = {
   showArrows: true,
   indexesPerRow: 0,
   tileCount: 25,
-  slideWidth: 150,
-  slideHeight: 250,
   displayCount: 4,
   minDisplayCount: 0,
   startIndex: 0,
   gridGap: 15,
 }
 
-export const DefaultCarousel = Template.bind({})
-DefaultCarousel.args = carouselStoryArgs
+export const Default = Template.bind({})
+Default.args = carouselStoryArgs
 
-export const VaryingSlideWidths = Template.bind({})
-VaryingSlideWidths.args = {
+export const DefaultVaryingWidths = Template.bind({})
+DefaultVaryingWidths.args = {
   ...carouselStoryArgs,
   randomTileSizes: true,
+  displayCount: 2,
 }
 
-export const InfiniteCarousel = Template.bind({})
-InfiniteCarousel.args = {
+export const Infinite = Template.bind({})
+Infinite.args = {
   ...carouselStoryArgs,
   isInfinite: true,
 }
 
-export const CustomArrows = Template.bind({})
-CustomArrows.args = {
-  randomTileSizes: false,
-  showIndexes: true,
-  scrollable: true,
-  draggable: true,
-  hasDragMomentum: true,
-  dragMomentumSpeed: 25,
-  dragMomentumDecay: 0.98,
-  showArrows: true,
-  indexesPerRow: 0,
-  tileCount: 25,
-  slideWidth: 150,
-  slideHeight: 250,
-  displayCount: 4,
-  minDisplayCount: 0,
-  startIndex: 0,
-  gridGap: 15,
-  CustomArrow: ({ isLeft, isHidden, scrollBy }) => {
-    const onClick = useCallback(
-      (scrollCount) => (e) => {
-        e.preventDefault()
-        e.stopPropagation()
+export const InfiniteVaryingWidth = Template.bind({})
+InfiniteVaryingWidth.args = {
+  ...carouselStoryArgs,
+  isInfinite: true,
+  randomTileSizes: true,
+  displayCount: 2,
+}
 
-        scrollBy(scrollCount)
-      },
-      [scrollBy, isLeft],
-    )
-
-    return (
-      <button
-        className={`customArrow ${isHidden ? 'isArrowHidden' : ''} ${isLeft ? 'isLeftArrow' : ''}`}
-        onClick={onClick(isLeft ? -1 : 1)}
-      >
-        <span className={`customArrowIcon ${isLeft ? 'isLeftArrowIcon' : 'isRightArrowIcon'}`} />
-      </button>
-    )
-  },
+export const MobileSingleItem = Template.bind({})
+MobileSingleItem.args = {
+  ...carouselStoryArgs,
+  isInfinite: true,
+  tileCount: 5,
+  displayCount: 1,
+  width: '300',
+  height: '500',
+  hasDragMomentum: false,
+  showArrows: false,
+  scrollable: false,
 }
