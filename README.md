@@ -3,6 +3,8 @@
 Simple swipeable, draggable, and scrollable React carousel component.
 [A demo of the carousel can be seen here](https://rmbraun.github.io/react-swipeable-infinite-carousel/)
 
+Supports infinite scrolling and slides of varying widths.
+
 ## How to install:
 
 ```
@@ -10,6 +12,10 @@ npm install @rybr/react-swipeable-infinite-carousel
 
 yarn add @rybr/react-swipeable-infinite-carousel
 ```
+
+## Working on:
+- auto-scroll feature
+- further optimizations
 
 ## How to use
 
