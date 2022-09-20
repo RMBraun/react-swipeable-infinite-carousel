@@ -557,6 +557,7 @@ export const Carousel = ({
         isMomentum.current = true
 
         const momentumFunc = (speed) => {
+          currentDragSpeed.current = speed
           momentumDebounceId.current = requestAnimationFrame(() => {
             const newTranslateOffset = translateOffset.current - speed
 
