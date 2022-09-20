@@ -20,7 +20,7 @@ yarn add @rybr/react-swipeable-infinite-carousel
 ## How to use
 
 ```jsx
-import { Carousel } from '@rybr/react-swipeable-infinite-carousel'
+import { Carousel, Arrows, Indexes } from '@rybr/react-swipeable-infinite-carousel'
 
 const CustomArrow = ({ 
   isLeft, //boolean to indicate if this is the right or left arrow
@@ -87,15 +87,14 @@ const CustomIndexes = ({
   gridGap={15} //gap between each tile in px
   displayCount={4} //maximum number of tiles to display
   minDisplayCount={2} //minimum number of tiles to display
-  showArrows={!isMobile} //toggles displaying the prebuilt scroll arrows
   arrowLeftProps={{ onClick: customOnClick }} //props to be sent to the left arrow
   arrowRightProps={{ onClick: customOnClick }} //props to be sent to the right arrow
-  renderArrows={CustomArrow} //custom scroll arrows
+  arrows={Arrows | CustomArrow} //use built-in Arrows or custom scroll arrows
   scrollSpeed={75} //maximum scroll speed in pixels
   style={ backgroundColor: 'red' } //container inline style overrides
   slideContainerStyle={ border: '1px solid blue' } //slides container inline style overrides
   slideStyle={ opacity: 0.5 } //slide container inline style overrides
-  showIndexes={true} //toggles displaying the scroll indexes
+  indexes={Indexes | CustomIndexes} //use built-in Indexes or custom indexes
   indexesPerRow={2} //how many indexes to show per row. Each index will be (container width) / indexesPerRow
   indexContainerProps={{ style: { background: blue }}} //props to be sent to the scroll index container
   indexProps={{ className: 'customClassName' }} //props to be sent to the scroll indexes
@@ -124,14 +123,12 @@ const CustomIndexes = ({
 | **style** 	| React.CSSProperties 	| {} 	| Inline style used to overwrite the default Carousel container CSS 	|
 | **slideContainerStyle** 	| React.CSSProperties 	| {} 	| Inline style used to overwrite the default `<div>` that wraps the slides (children) 	|
 | **slideStyle** 	| React.CSSProperties 	| {} 	| Inline style used to overwrite the default `<div>` that wraps each slide (each child) 	|
-| **showArrows** 	| boolean 	| true 	| Boolean to toggle displaying the prebuilt scroll arrows 	|
 | **arrowLeftProps** 	| Record<string, unknown> 	| {} 	| props to send to the left arrow container 	|
 | **arrowRightProps** 	| Record<string, unknown> 	| {} 	| props to send to the right arrow container 	|
 | **scrollSpeed** 	| number 	| 75 	| The maximum scroll speed allowed in pixels 	|
-| **renderArrows** 	| React.FC<RenderArrowsProps> 	|  	| Function that returns a React.Element to be used as the scroll arrows. 	|
-| **showIndexes** 	| boolean 	| true 	| Show the scrolling index indicators 	|
+| **arrows** 	| React.FC<RenderArrowsProps> 	|  	| Function that returns a React.Element to be used as the scroll arrows. 	|
 | **indexesPerRow** 	| number 	| 0 	| How many indexes to show per row (will wrap). <br>A value of 0, null, or undefined, is the equivalent to setting the value to 1. 	|
 | **indexContainerProps** 	| Record<string, unknown> 	| {} 	| props to send to the index container 	|
 | **indexProps** 	| Record<string, unknown> 	| {} 	| props to send to the index icon 	|
-| **renderIndexes** 	| React.FC<RenderIndexesProps> 	|  	| Function that returns a React.Element to be used as the scroll indexes 	|
+| **indexes** 	| React.FC<RenderIndexesProps> 	|  	| Function that returns a React.Element to be used as the scroll indexes 	|
 | **children** 	| React.Node \| Array<React.Node> 	|  	| The slides you wish to display in the carousel 	|

@@ -14,9 +14,8 @@ export interface CarouselProps {
   arrowLeftProps?: Record<string, unknown>
   arrowRightProps?: Record<string, unknown>
   scrollSpeed?: number
-  showIndexes?: boolean
   indexesPerRow?: number
-  renderIndexes?: React.FunctionComponent<any>
+  indexes?: React.FunctionComponent<any>
   indexContainerProps?: Record<string, unknown>
   indexProps?: Record<string, unknown>
   style?: React.CSSProperties
