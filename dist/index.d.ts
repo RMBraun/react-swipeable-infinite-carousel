@@ -10,8 +10,7 @@ export interface CarouselProps {
   minDisplayCount?: number
   displayCount?: number
   gridGap?: number
-  showArrows?: boolean
-  renderArrows?: React.FC<any>
+  arrows?: React.FC<any>
   arrowLeftProps?: Record<string, unknown>
   arrowRightProps?: Record<string, unknown>
   scrollSpeed?: number
