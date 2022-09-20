@@ -4,10 +4,10 @@ import styles from './Carousel.module.css'
 
 const getClientXOffset = (e) => e?.touches?.[0]?.clientX || e?.clientX || 0
 
-const calculateAnchors = (slideRefs = [], gridGap) =>
+const calculateAnchors = (slideRefs = [], gridGap, isInfinite) =>
   slideRefs.reduce((acc, ref, i) => {
     if (ref?.current) {
-      const width = ref.current.clientWidth - gridGap
+      const width = ref.current.clientWidth - (!isInfinite && i === slideRefs.length - 1 ? 0 : gridGap)
       const start = i === 0 ? 0 : acc[i - 1].end + gridGap
       const end = start + width
       acc.push({ start, end, width })
@@ -295,7 +295,7 @@ export const Carousel = ({
   }
 
   const onResize = () => {
-    const newSlideAnchors = calculateAnchors(slidesRefs, gridGap)
+    const newSlideAnchors = calculateAnchors(slidesRefs, gridGap, isInfinite)
     if (newSlideAnchors?.length) {
       const containerWidth = slideContainerRef.current.clientWidth
 
