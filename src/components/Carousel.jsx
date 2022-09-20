@@ -34,103 +34,6 @@ const ContainerCss = ({ displayCount, minDisplayCount, slideAnchors }) => {
   }
 }
 
-// eslint-disable-next-line no-unused-vars
-const Arrow = ({ isLeft, isRight, isHidden, scrollBy, arrowProps, arrowIconProps }) => {
-  const arrowClassName = useMemo(
-    () =>
-      `${styles.arrow} ${isLeft ? styles.leftArrow : styles.rightArrow} ${isHidden ? styles.isArrowHidden : ''} ${
-        arrowProps?.className || ''
-      }`,
-    [arrowProps?.className, isLeft, isHidden],
-  )
-
-  const onClick = useCallback(
-    (callback, scrollCount) => (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-
-      if (typeof callback === 'function') {
-        callback(e)
-      }
-
-      scrollBy(scrollCount)
-    },
-    [arrowProps?.onClick, scrollBy, isLeft],
-  )
-
-  const iconClassName = useMemo(
-    () =>
-      `${styles.arrowIcon} ${isLeft ? styles.leftArrowIcon : styles.rightArrowIcon} ${arrowIconProps?.className || ''}`,
-    [arrowIconProps?.className, isLeft],
-  )
-
-  return (
-    <button {...arrowProps} className={arrowClassName} onClick={onClick(arrowProps?.onClick, isLeft ? -1 : 1)}>
-      <span {...arrowIconProps} className={iconClassName} />
-    </button>
-  )
-}
-
-// eslint-disable-next-line no-unused-vars
-const Indexes = ({
-  activeIndexes,
-  startIndex,
-  // eslint-disable-next-line no-unused-vars
-  endIndex,
-  indexesPerRow,
-  slideAnchors,
-  scrollBy,
-  indexContainerProps,
-  indexProps,
-}) => {
-  const containerRef = useRef()
-  const gap = 5
-  const borderWidth = 2
-  const width = useMemo(() => `calc((100% - ${(indexesPerRow - 1) * gap}px) / ${indexesPerRow})`, [indexesPerRow])
-
-  const containerClassName = useMemo(
-    () => `${styles.indexContainer} ${indexContainerProps?.className || ''}`,
-    [indexContainerProps?.className],
-  )
-
-  const iconClassName = useMemo(() => `${styles.index} ${indexProps?.className || ''}`, [indexProps?.className])
-
-  const onClick = useCallback(
-    (callback, scrollCount) => (e) => {
-      if (typeof callback === 'function') {
-        callback(e)
-      }
-
-      scrollBy(scrollCount)
-    },
-    [scrollBy],
-  )
-
-  return (
-    <div
-      {...indexContainerProps}
-      ref={containerRef}
-      className={containerClassName}
-      style={{ gap: `${gap}px`, ...indexContainerProps?.style }}
-    >
-      {slideAnchors?.map((_, i) => (
-        <button
-          key={i}
-          {...indexProps}
-          className={iconClassName}
-          style={{
-            backgroundColor: activeIndexes.includes(i) ? 'black' : 'transparent',
-            width,
-            borderWidth: `${borderWidth}px`,
-            ...indexProps?.style,
-          }}
-          onClick={onClick(indexProps?.onClick, i - startIndex)}
-        />
-      ))}
-    </div>
-  )
-}
-
 export const Carousel = ({
   isInfinite = false,
   startIndex = 0,
@@ -142,14 +45,12 @@ export const Carousel = ({
   minDisplayCount = 0,
   displayCount = 0,
   gridGap = 10,
-  showArrows = true,
-  renderArrows: RenderArrows = Arrow,
+  arrows: RenderArrows,
   arrowLeftProps = {},
   arrowRightProps = {},
   scrollSpeed = 75,
-  showIndexes = true,
   indexesPerRow = 0,
-  renderIndexes: RenderIndexes = Indexes,
+  indexes: RenderIndexes,
   indexContainerProps = {},
   indexProps = {},
   style = {},
@@ -688,7 +589,7 @@ export const Carousel = ({
       ref={containerRef}
     >
       <div className={styles.slidesAndArrowsContainer} onMouseLeave={onTouchEnd}>
-        {showArrows && (
+        {RenderArrows ? (
           <RenderArrows
             isLeft={true}
             isRight={false}
@@ -696,7 +597,7 @@ export const Carousel = ({
             scrollBy={onArrowClick}
             arrowProps={arrowLeftProps}
           />
-        )}
+        ) : null}
         <div
           ref={slideContainerRef}
           className={styles.slideContainer}
@@ -720,7 +621,7 @@ export const Carousel = ({
             </div>
           ))}
         </div>
-        {showArrows && (
+        {RenderArrows ? (
           <RenderArrows
             isLeft={false}
             isRight={true}
@@ -728,9 +629,9 @@ export const Carousel = ({
             scrollBy={onArrowClick}
             arrowProps={arrowRightProps}
           />
-        )}
+        ) : null}
       </div>
-      {showIndexes && (
+      {RenderIndexes ? (
         <RenderIndexes
           startIndex={index.left - clonesLength}
           endIndex={index.right - clonesLength}
@@ -741,7 +642,7 @@ export const Carousel = ({
           indexContainerProps={indexContainerProps}
           indexProps={indexProps}
         />
-      )}
+      ) : null}
     </div>
   )
 }

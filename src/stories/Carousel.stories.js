@@ -1,6 +1,10 @@
 import React, { useMemo } from 'react'
 import { Carousel as CarouselEle } from '../components/Carousel'
+import { Arrows } from '../components/Arrows'
+import { Indexes } from '../components/Indexes'
 import './Carousel.css'
+
+// import { Carousel as CarouselEle, Arrows, Indexes } from '../../dist/index.es'
 
 const SectionContainerCss = {
   display: 'flex',
@@ -92,10 +96,9 @@ const Template = ({
           gridGap={gridGap}
           displayCount={displayCount}
           minDisplayCount={minDisplayCount}
-          showArrows={showArrows}
-          showIndexes={showIndexes}
+          arrows={showArrows ? Arrows : null}
+          indexes={showIndexes ? Indexes : null}
           indexesPerRow={indexesPerRow}
-          renderArrows={CustomArrow}
           isScrollable={scrollable}
           isDraggable={draggable}
           hasDragMomentum={hasDragMomentum}
@@ -196,12 +199,12 @@ const carouselStoryArgs = {
   isInfinite: false,
   randomTileSizes: false,
   showIndexes: true,
+  showArrows: true,
   scrollable: true,
   draggable: true,
   hasDragMomentum: true,
   dragMomentumSpeed: 25,
   dragMomentumDecay: 0.98,
-  showArrows: true,
   indexesPerRow: 0,
   tileCount: 25,
   displayCount: 4,
