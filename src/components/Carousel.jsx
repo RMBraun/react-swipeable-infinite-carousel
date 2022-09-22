@@ -154,11 +154,7 @@ export const Carousel = ({
 
   const showLeftArrow = isInfinite || index.left !== 0
 
-  const showRightArrow =
-    isInfinite ||
-    (translateOffset.current != null && containerRef.current != null && slideAnchors?.[slideCount - 1] != null
-      ? -1 * translateOffset.current + containerRef.current.clientWidth < slideAnchors?.[slideCount - 1].end
-      : true)
+  const showRightArrow = isInfinite || index.left < maxIndex
 
   const getBoundIndex = useCallback(
     (newIndex, newMaxIndex = maxIndex) => Math.max(0, Math.min(newMaxIndex, newIndex)),
@@ -366,27 +362,29 @@ export const Carousel = ({
 
         requestAnimationFrame(() => {
           slideContainerRef.current.style.transitionDuration = '500ms'
-          requestAnimationFrame(() => {
-            if (newBoundIndex !== index.left) {
-              const newTranslateOffset = getTranslateOffset(newBoundIndex)
-              const newScrollIndex = getScrollIndex(newTranslateOffset)
-              setIndexState(newScrollIndex)
 
-              slideContainerRef.current.addEventListener(
-                'transitionend',
-                () => {
-                  areArrowsLocked.current = false
-                },
-                { once: true },
-              )
+          if (newBoundIndex !== index.left) {
+            const newTranslateOffset = getTranslateOffset(newBoundIndex)
+            const newScrollIndex = getScrollIndex(newTranslateOffset)
 
+            slideContainerRef.current.addEventListener(
+              'transitionend',
+              () => {
+                areArrowsLocked.current = false
+              },
+              { once: true },
+            )
+
+            requestAnimationFrame(() => {
               slideContainerRef.current.style.transform = `translate(${newTranslateOffset}px)`
+            })
 
-              translateOffset.current = newTranslateOffset
-            } else {
-              areArrowsLocked.current = false
-            }
-          })
+            translateOffset.current = newTranslateOffset
+
+            setIndexState(newScrollIndex)
+          } else {
+            areArrowsLocked.current = false
+          }
         })
       }
     },
@@ -395,6 +393,7 @@ export const Carousel = ({
       isInfinite,
       index,
       slideCount,
+      clonesLength,
       getScrollIndex,
       getTranslateOffset,
       setTranslateOffset,
@@ -591,6 +590,9 @@ export const Carousel = ({
       <div className={styles.slidesAndArrowsContainer} onMouseLeave={onTouchEnd}>
         {RenderArrows ? (
           <RenderArrows
+            startIndex={index.left - clonesLength}
+            endIndex={index.right - clonesLength}
+            activeIndexes={activeIndexes}
             isLeft={true}
             isRight={false}
             isHidden={isScrolling || isDragging || !showLeftArrow}
@@ -623,6 +625,9 @@ export const Carousel = ({
         </div>
         {RenderArrows ? (
           <RenderArrows
+            startIndex={index.left - clonesLength}
+            endIndex={index.right - clonesLength}
+            activeIndexes={activeIndexes}
             isLeft={false}
             isRight={true}
             isHidden={isScrolling || isDragging || !showRightArrow}

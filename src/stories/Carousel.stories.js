@@ -59,7 +59,6 @@ const Template = ({
   hasDragMomentum,
   dragMomentumSpeed,
   dragMomentumDecay,
-  CustomArrow,
   width,
   height,
 }) => {

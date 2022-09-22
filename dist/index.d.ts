@@ -24,6 +24,9 @@ export interface CarouselProps {
   children?: React.ReactNode
 }
 export interface RenderArrowsProps {
+  activeIndexes: Array<number>
+  startIndex: number
+  endIndex: number
   isLeft: boolean
   isRight: boolean
   isHidden: boolean
