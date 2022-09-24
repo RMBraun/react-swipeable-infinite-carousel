@@ -81,7 +81,7 @@ export const Carousel = ({
             ...rawSlides.slice(0, clonesLength),
           ]
         : rawSlides,
-    [rawSlides.length, isInfinite, clonesLength],
+    [children, rawSlides.length, isInfinite, clonesLength],
   )
 
   const slideCount = slides.length
@@ -500,8 +500,9 @@ export const Carousel = ({
         return
       }
 
-      const isWheel = e.deltaX === 0 && Math.abs(e.deltaY) > 0
-      const scrollDelta = isWheel ? -1 * e.deltaY : e.deltaX
+      //TODO handle mouse wheel scrolling correctly
+      // const isWheel = e.deltaX === 0 && Math.abs(e.deltaY) > 0
+      const scrollDelta = e.deltaX
       const scrollDirection = Math.sign(scrollDelta)
 
       if (
