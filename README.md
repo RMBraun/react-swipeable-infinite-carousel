@@ -14,6 +14,7 @@ yarn add @rybr/react-swipeable-infinite-carousel
 ```
 
 ## Working on:
+- handle mouse wheel scroll correctly
 - auto-scroll feature
 - further optimizations
 
