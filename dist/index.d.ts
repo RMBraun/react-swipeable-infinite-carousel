@@ -18,21 +18,24 @@ export interface CarouselProps {
   indexes?: React.FunctionComponent<any>
   indexContainerProps?: Record<string, unknown>
   indexProps?: Record<string, unknown>
+  shouldScrollByDisplayCount?: boolean
+  scrollCount?: number
   style?: React.CSSProperties
   slideContainerStyle?: React.CSSProperties
   slideStyle?: React.CSSProperties
   children?: React.ReactNode
 }
 export interface RenderArrowsProps {
-  activeIndexes: Array<number>
   startIndex: number
   endIndex: number
+  activeIndexes: Array<number>
   isLeft: boolean
   isRight: boolean
   isHidden: boolean
   scrollBy: (scrollBy: number) => void
+  arrowProps: Record<string, unknown>
+  scrollCount: number
 }
-
 export interface RenderIndexesProps {
   activeIndexes: Array<number>
   startIndex: number

@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react'
 import styles from './Arrows.module.css'
 
-export const Arrows = ({ isLeft, isHidden, scrollBy, arrowProps, arrowIconProps }) => {
+export const Arrows = ({ isLeft, isHidden, scrollBy, scrollCount, arrowProps, arrowIconProps }) => {
   const arrowClassName = useMemo(
     () =>
       `${styles.arrow} ${isLeft ? styles.leftArrow : styles.rightArrow} ${isHidden ? styles.isArrowHidden : ''} ${
@@ -31,7 +31,11 @@ export const Arrows = ({ isLeft, isHidden, scrollBy, arrowProps, arrowIconProps 
   )
 
   return (
-    <button {...arrowProps} className={arrowClassName} onClick={onClick(arrowProps?.onClick, isLeft ? -1 : 1)}>
+    <button
+      {...arrowProps}
+      className={arrowClassName}
+      onClick={onClick(arrowProps?.onClick, isLeft ? -scrollCount : scrollCount)}
+    >
       <span {...arrowIconProps} className={iconClassName} />
     </button>
   )

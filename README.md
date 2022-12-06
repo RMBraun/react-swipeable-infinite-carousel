@@ -17,12 +17,14 @@ yarn add @rybr/react-swipeable-infinite-carousel
 - handle mouse wheel scroll correctly
 - auto-scroll feature
 - further optimizations
+- scroll arrows scroll by displayed tile count for infinite carousel
 
 ## How to use
 
 ```jsx
 import { Carousel, Arrows, Indexes } from '@rybr/react-swipeable-infinite-carousel'
 
+//OPTIONAL - can create custom scroll arrows
 const CustomArrow = ({ 
   isLeft, //boolean to indicate if this is the right or left arrow
   isHidden, //should the arrow be hidden? (true during scrollings, dragging, and when there is nothing to scroll)
@@ -47,6 +49,7 @@ const CustomArrow = ({
   )
 }
 
+//OPTIONAL - can create custom tile index footer
 const CustomIndexes = ({ 
   activeIndexes, //Array of numbers specifying which indexes are active
   startIndex, //index of the left-most displayed item
@@ -99,6 +102,8 @@ const CustomIndexes = ({
   indexesPerRow={2} //how many indexes to show per row. Each index will be (container width) / indexesPerRow
   indexContainerProps={{ style: { background: blue }}} //props to be sent to the scroll index container
   indexProps={{ className: 'customClassName' }} //props to be sent to the scroll indexes
+  shouldScrollByDisplayCount={true} //if true then scroll arrows will scroll by the displayed tile count else will scroll 1 tile at a time
+  scrollCount={3} //number of tiles to scroll per scroll arrow click. "shouldScrollByDisplayCount" overrides this value
   customIndexes={CustomIndexes} //custom scroll indexes 
 >
   {randomColors.map((color, i) => (
@@ -132,4 +137,6 @@ const CustomIndexes = ({
 | **indexContainerProps** 	| Record<string, unknown> 	| {} 	| props to send to the index container 	|
 | **indexProps** 	| Record<string, unknown> 	| {} 	| props to send to the index icon 	|
 | **indexes** 	| React.FC<RenderIndexesProps> 	|  	| Function that returns a React.Element to be used as the scroll indexes 	|
+| *EXPERIMENTAL* **shouldScrollByDisplayCount**  	| boolean 	|  	| If true then scroll arrows will scroll by the displayed tile count else will scroll 1 tile at a time (disabled for infinite carousels) 	|
+| **scrollCount** 	| number 	|  	| Number of tiles to scroll per scroll arrow click. "shouldScrollByDisplayCount" overrides this value 	|
 | **children** 	| React.Node \| Array<React.Node> 	|  	| The slides you wish to display in the carousel 	|

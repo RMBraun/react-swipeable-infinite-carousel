@@ -55,6 +55,7 @@ const Template = ({
   showArrows,
   gridGap,
   scrollable,
+  shouldScrollByDisplayCount,
   draggable,
   hasDragMomentum,
   dragMomentumSpeed,
@@ -99,6 +100,7 @@ const Template = ({
           indexes={showIndexes ? Indexes : null}
           indexesPerRow={indexesPerRow}
           isScrollable={scrollable}
+          shouldScrollByDisplayCount={shouldScrollByDisplayCount}
           isDraggable={draggable}
           hasDragMomentum={hasDragMomentum}
           dragMomentumSpeed={dragMomentumSpeed}
@@ -153,6 +155,9 @@ export default {
     scrollable: {
       control: { type: 'boolean' },
     },
+    shouldScrollByDisplayCount: {
+      control: { type: 'boolean' },
+    },
     draggable: {
       control: { type: 'boolean' },
     },
@@ -200,6 +205,7 @@ const carouselStoryArgs = {
   showIndexes: true,
   showArrows: true,
   scrollable: true,
+  shouldScrollByDisplayCount: false,
   draggable: true,
   hasDragMomentum: true,
   dragMomentumSpeed: 25,

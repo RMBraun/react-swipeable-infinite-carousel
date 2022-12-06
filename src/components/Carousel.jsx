@@ -49,6 +49,8 @@ export const Carousel = ({
   arrowLeftProps = {},
   arrowRightProps = {},
   scrollSpeed = 75,
+  scrollCount = 1,
+  shouldScrollByDisplayCount = false,
   indexesPerRow = 0,
   indexes: RenderIndexes,
   indexContainerProps = {},
@@ -58,6 +60,8 @@ export const Carousel = ({
   slideStyle = {},
   children,
 }) => {
+  const [isHovering, setIsHovering] = useState(false)
+
   const momentumDebounceId = useRef()
 
   const transitionDebounceId = useRef()
@@ -551,6 +555,14 @@ export const Carousel = ({
     ],
   )
 
+  const onMouseEnter = useCallback(() => {
+    setIsHovering(true)
+  }, [setIsHovering])
+
+  const onMouseLeave = useCallback(() => {
+    setIsHovering(false)
+  }, [setIsHovering])
+
   useEffect(() => {
     if (!areArrowsLocked.current && !(isDraggable && isDragging) && !(isScrollable && isScrolling)) {
       if (momentumDebounceId.current) {
@@ -579,6 +591,11 @@ export const Carousel = ({
     [slideAnchors, slideAnchors?.length, minDisplayCount, displayCount],
   )
 
+  const arrowScrollCount = useMemo(
+    () => (!isInfinite && shouldScrollByDisplayCount ? activeIndexes.length : scrollCount) || 1,
+    [isInfinite, shouldScrollByDisplayCount, activeIndexes, activeIndexes.length, scrollCount],
+  )
+
   return (
     <div
       className={styles.container}
@@ -587,6 +604,8 @@ export const Carousel = ({
         ...style,
       }}
       ref={containerRef}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       <div className={styles.slidesAndArrowsContainer} onMouseLeave={onTouchEnd}>
         {RenderArrows ? (
@@ -596,9 +615,10 @@ export const Carousel = ({
             activeIndexes={activeIndexes}
             isLeft={true}
             isRight={false}
-            isHidden={isScrolling || isDragging || !showLeftArrow}
+            isHidden={!isHovering || isScrolling || isDragging || !showLeftArrow}
             scrollBy={onArrowClick}
             arrowProps={arrowLeftProps}
+            scrollCount={arrowScrollCount}
           />
         ) : null}
         <div
@@ -631,9 +651,10 @@ export const Carousel = ({
             activeIndexes={activeIndexes}
             isLeft={false}
             isRight={true}
-            isHidden={isScrolling || isDragging || !showRightArrow}
+            isHidden={!isHovering || isScrolling || isDragging || !showRightArrow}
             scrollBy={onArrowClick}
             arrowProps={arrowRightProps}
+            scrollCount={arrowScrollCount}
           />
         ) : null}
       </div>
