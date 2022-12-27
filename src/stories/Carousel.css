@@ -68,3 +68,10 @@ body,
   transform: translateX(2.5px) rotate(45deg);
 }
 
+.tile {
+  margin: 3px;
+}
+
+/* .tile:focus {
+  outline: 3px dashed black;
+} */

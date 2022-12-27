@@ -137,6 +137,6 @@ const CustomIndexes = ({
 | **indexContainerProps** 	| Record<string, unknown> 	| {} 	| props to send to the index container 	|
 | **indexProps** 	| Record<string, unknown> 	| {} 	| props to send to the index icon 	|
 | **indexes** 	| React.FC<RenderIndexesProps> 	|  	| Function that returns a React.Element to be used as the scroll indexes 	|
-| *EXPERIMENTAL* **shouldScrollByDisplayCount**  	| boolean 	|  	| If true then scroll arrows will scroll by the displayed tile count else will scroll 1 tile at a time (disabled for infinite carousels) 	|
-| **scrollCount** 	| number 	|  	| Number of tiles to scroll per scroll arrow click. "shouldScrollByDisplayCount" overrides this value 	|
+| **shouldScrollByDisplayCount (disabled for infinite)**  	| boolean 	| true 	| If true then scroll arrows will scroll by the displayed tile count else will scroll "scrollCount" tile(s) at a time 	|
+| **scrollCount (disabled for infinite)** 	| number 	| 1 	| Number of tiles to scroll per scroll arrow click. "shouldScrollByDisplayCount" overrides this value 	|
 | **children** 	| React.Node \| Array<React.Node> 	|  	| The slides you wish to display in the carousel 	|

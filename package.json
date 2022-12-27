@@ -5,7 +5,7 @@
     "url": "git+https://github.com/RMBraun/react-swipeable-infinite-carousel.git"
   },
   "homepage": "http://rmbraun.github.io/react-swipeable-infinite-carousel",
-  "version": "3.1.5",
+  "version": "3.2.0",
   "description": "swipeable infinite responsive React carousel",
   "keywords": [
     "react",
