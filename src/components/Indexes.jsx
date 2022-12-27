@@ -42,6 +42,7 @@ export const Indexes = ({
     >
       {slideAnchors?.map((_, i) => (
         <button
+          tabIndex={-1} //disabled for ADA
           key={i}
           {...indexProps}
           className={iconClassName}

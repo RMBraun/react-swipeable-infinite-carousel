@@ -33,6 +33,7 @@ export const Arrows = ({ isLeft, isHidden, scrollBy, scrollCount, arrowProps, ar
   return (
     <button
       {...arrowProps}
+      tabIndex={-1} //no focus by default for ADA
       className={arrowClassName}
       onClick={onClick(arrowProps?.onClick, isLeft ? -scrollCount : scrollCount)}
     >

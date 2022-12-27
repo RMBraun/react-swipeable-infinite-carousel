@@ -109,13 +109,21 @@ const Template = ({
           {randomColors.map((slide, i) => (
             <div
               key={i}
+              tabIndex={0}
+              className={'tile'}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  console.log(`Tile ${i} clicked`)
+                }
+              }}
               style={TileCss({
                 color: slide.color,
                 width: `${randomTileSizes ? slide.width : width}px`,
                 height: `${height}px`,
               })}
             >
-              {i}
+              <button>{i}</button>
+              <button>{i}</button>
             </div>
           ))}
         </CarouselEle>
@@ -157,6 +165,9 @@ export default {
     },
     shouldScrollByDisplayCount: {
       control: { type: 'boolean' },
+    },
+    scrollCount: {
+      control: { type: 'range', min: 1, max: 4 },
     },
     draggable: {
       control: { type: 'boolean' },
@@ -205,7 +216,8 @@ const carouselStoryArgs = {
   showIndexes: true,
   showArrows: true,
   scrollable: true,
-  shouldScrollByDisplayCount: false,
+  shouldScrollByDisplayCount: true,
+  scrollCount: 4,
   draggable: true,
   hasDragMomentum: true,
   dragMomentumSpeed: 25,
@@ -232,12 +244,16 @@ export const Infinite = Template.bind({})
 Infinite.args = {
   ...carouselStoryArgs,
   isInfinite: true,
+  shouldScrollByDisplayCount: false,
+  scrollCount: 1,
 }
 
 export const InfiniteVaryingWidth = Template.bind({})
 InfiniteVaryingWidth.args = {
   ...carouselStoryArgs,
   isInfinite: true,
+  shouldScrollByDisplayCount: false,
+  scrollCount: 1,
   randomTileSizes: true,
   displayCount: 2,
 }
