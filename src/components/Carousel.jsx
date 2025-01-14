@@ -94,7 +94,7 @@ export const Carousel = ({
     () =>
       Array(slideCount)
         .fill(null)
-        .map((_, i) => slidesRefs?.[i] || React.createRef()),
+        .map((_, i) => (typeof slidesRefs !== 'undefined' ? slidesRefs[i] : null) || React.createRef()),
     [slideCount],
   )
 
